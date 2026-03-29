@@ -402,6 +402,89 @@ function openDelete(id){deleteTarget=id;document.getElementById('modal-delete').
 function confirmDelete(){db.positions=db.positions.filter(p=>p.id!==deleteTarget);persist();document.getElementById('modal-delete').classList.remove('open');showView('positions');}
 
 load();renderFilter();renderPositions();
+
+// ── COINGECKO PRICE SYNC ──────────────────────────────────────────────────────
+// Maps common symbols to CoinGecko IDs
+const CG_IDS = {
+  BTC:'bitcoin',ETH:'ethereum',SOL:'solana',BNB:'binancecoin',
+  USDC:'usd-coin',USDT:'tether',DAI:'dai',MATIC:'matic-network',
+  AVAX:'avalanche-2',DOT:'polkadot',LINK:'chainlink',UNI:'uniswap',
+  AAVE:'aave',CRV:'curve-dao-token',ARB:'arbitrum',OP:'optimism',
+  CBETH:'coinbase-wrapped-staked-eth',CBXRP:'ripple',XRP:'ripple',
+  WBTC:'wrapped-bitcoin',WETH:'weth',HYPE:'hyperliquid',
+  SUI:'sui',APT:'aptos',INJ:'injective-protocol',TIA:'celestia',
+  ATOM:'cosmos',NEAR:'near',FTM:'fantom',BASE:'base'
+};
+
+async function syncPrices() {
+  const symbols = [...new Set(db.assets.map(a=>a.symbol.toUpperCase()))];
+  const ids = symbols.map(s=>CG_IDS[s]).filter(Boolean);
+  if(!ids.length) return;
+
+  const btn = document.getElementById('sync-btn');
+  if(btn){ btn.textContent='Actualizando...'; btn.disabled=true; }
+
+  try {
+    const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd`);
+    const data = await res.json();
+
+    let updated = 0;
+    db.assets.forEach(a => {
+      const cgId = CG_IDS[a.symbol.toUpperCase()];
+      if(cgId && data[cgId]?.usd) {
+        a.price = data[cgId].usd;
+        updated++;
+      }
+    });
+
+    if(updated > 0) {
+      persist();
+      const now = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+      localStorage.setItem('crm_last_sync', now);
+      if(btn){ btn.textContent=`✓ Actualizado ${now}`; btn.disabled=false; }
+      // Re-render current view
+      const cur = document.querySelector('.nav-btn.active')?.id;
+      if(cur==='nav-portfolio') renderPortfolio();
+      if(cur==='nav-global') renderGlobal();
+    } else {
+      if(btn){ btn.textContent='Sin cambios'; btn.disabled=false; }
+    }
+  } catch(e) {
+    if(btn){ btn.textContent='Error — reintentar'; btn.disabled=false; }
+    console.error('CoinGecko error:', e);
+  }
+}
+
+// Inject sync button into nav
+function injectSyncBtn() {
+  const nav = document.querySelector('.nav');
+  if(!nav || document.getElementById('sync-btn')) return;
+  const lastSync = localStorage.getItem('crm_last_sync');
+  const btn = document.createElement('button');
+  btn.id = 'sync-btn';
+  btn.textContent = lastSync ? `↻ Precios (${lastSync})` : '↻ Actualizar precios';
+  btn.style.cssText = 'background:transparent;border:0.5px solid var(--border2);border-radius:8px;padding:6px 14px;font-size:13px;font-family:inherit;color:var(--text2);cursor:pointer;transition:all .15s;margin-left:8px;';
+  btn.onmouseover = ()=>{ btn.style.background='var(--bg2)'; btn.style.color='var(--text)'; };
+  btn.onmouseout = ()=>{ btn.style.background='transparent'; btn.style.color='var(--text2)'; };
+  btn.onclick = syncPrices;
+  // Insert before the new button
+  const newBtn = document.getElementById('nav-new');
+  nav.insertBefore(btn, newBtn);
+}
+
+// Auto-sync on load if assets exist and last sync was >10 min ago
+async function autoSync() {
+  injectSyncBtn();
+  if(!db.assets.length) return;
+  const lastSync = localStorage.getItem('crm_last_sync_ts');
+  const now = Date.now();
+  if(!lastSync || now - parseInt(lastSync) > 10*60*1000) {
+    localStorage.setItem('crm_last_sync_ts', now);
+    await syncPrices();
+  }
+}
+
+setTimeout(autoSync, 500);
 </script>
 </body>
 </html>
