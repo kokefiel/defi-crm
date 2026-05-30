@@ -253,8 +253,22 @@ tr:hover{background:var(--bg4)20}
 .empty .e-icon{font-size:2.5rem;margin-bottom:12px;opacity:.4}
 .empty .e-title{font-size:1.1rem;font-weight:600;color:var(--tx2);margin-bottom:6px}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<div id="authOverlay" style="position:fixed;inset:0;background:var(--bg,#0a0a0f);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:360px;background:var(--card,#15151f);border:1px solid var(--brd,#2a2a3a);border-radius:16px;padding:28px">
+    <h2 style="margin:0 0 4px;font-size:1.3rem">🔒 CRM Crypto</h2>
+    <p style="margin:0 0 20px;color:var(--tx3,#888);font-size:.88rem">Tus datos cifrados en la nube</p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <input id="authEmail" type="email" placeholder="Email" autocomplete="username" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--brd,#2a2a3a);background:var(--bg3,#0f0f17);color:var(--tx,#fff);font-size:1rem">
+      <input id="authPass" type="password" placeholder="Contraseña" autocomplete="current-password" style="width:100%;padding:12px;border-radius:8px;border:1px solid var(--brd,#2a2a3a);background:var(--bg3,#0f0f17);color:var(--tx,#fff);font-size:1rem">
+      <button id="authBtnLogin" onclick="authLogin()" style="width:100%;padding:12px;border-radius:8px;border:none;background:#4f8cff;color:#fff;font-weight:600;font-size:1rem;cursor:pointer">Entrar</button>
+      <button id="authBtnSignup" onclick="authSignup()" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd,#2a2a3a);background:transparent;color:var(--tx2,#ccc);font-size:.9rem;cursor:pointer">Crear cuenta nueva</button>
+      <div id="authMsg" style="font-size:.85rem;color:#ef4444;min-height:18px;text-align:center"></div>
+    </div>
+  </div>
+</div>
 <nav class="nav" id="nav">
   <button class="nav-btn active" onclick="go('portfolio')">Portfolio</button>
   <div class="nav-sep"></div>
@@ -263,6 +277,7 @@ tr:hover{background:var(--bg4)20}
   <div class="nav-right">
     <button class="btn-add" id="btnAdd" onclick="onAdd()">+ Activo</button>
     <button class="nav-icon" onclick="syncPrices(true)" title="Actualizar precios">↻</button>
+    <button class="nav-icon" onclick="authLogout()" title="Cerrar sesión">⎋</button>
     <span id="syncInfo"></span>
     <button class="nav-icon" onclick="openConfig()" title="Configuración">⚙</button>
   </div>
@@ -277,12 +292,84 @@ tr:hover{background:var(--bg4)20}
 <input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleImport(event)">
 
 <script>
+// ===================== SUPABASE =====================
+const SB_URL='https://ffknejjagedfykrvmhgl.supabase.co';
+const SB_KEY='sb_publishable_gQ2OmFKkam2QAiVlgLlr1Q_WzhUWCBY';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
+let sbUser=null, cloudReady=false, saveTimer=null;
+
 // ===================== DB =====================
 const DB_KEY='crmcrypto_v3';
 function loadDB(){try{return JSON.parse(localStorage.getItem(DB_KEY))||defaultDB()}catch(e){return defaultDB()}}
-function saveDB(d){localStorage.setItem(DB_KEY,JSON.stringify(d))}
+function saveLocal(d){localStorage.setItem(DB_KEY,JSON.stringify(d))}
+// saveDB: guarda local al instante + nube en segundo plano (debounced)
+function saveDB(d){
+  saveLocal(d);
+  if(cloudReady&&sbUser){
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>pushCloud(d),800);
+  }
+}
+async function pushCloud(d){
+  try{
+    const {error}=await sb.from('crypto_crm').upsert({user_id:sbUser.id,data:d,updated_at:new Date().toISOString()});
+    if(error)console.warn('Cloud save error:',error.message);
+    else updateSyncInfo();
+  }catch(e){console.warn('Cloud save failed',e)}
+}
+async function pullCloud(){
+  try{
+    const {data,error}=await sb.from('crypto_crm').select('data,updated_at').eq('user_id',sbUser.id).maybeSingle();
+    if(error){console.warn('Cloud load error:',error.message);return null}
+    return data?data.data:null;
+  }catch(e){console.warn('Cloud load failed',e);return null}
+}
 function defaultDB(){return{config:{wallet1Name:'Wallet 1',wallet2Name:'Wallet 2 (compartida)'},assets:[],positions:[],lastSync:0}}
 let db=loadDB();
+
+// ===================== AUTH =====================
+function authShow(show){const o=$('#authOverlay');if(o)o.style.display=show?'flex':'none'}
+function authError(msg){const m=$('#authMsg');if(m)m.textContent=msg}
+async function authLogin(){
+  authError('');
+  const email=$('#authEmail').value.trim(),pass=$('#authPass').value;
+  if(!email||!pass){authError('Rellena email y contraseña');return}
+  $('#authBtnLogin').textContent='Entrando...';
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  $('#authBtnLogin').textContent='Entrar';
+  if(error){authError(error.message);return}
+  await onLoggedIn(data.user);
+}
+async function authSignup(){
+  authError('');
+  const email=$('#authEmail').value.trim(),pass=$('#authPass').value;
+  if(!email||!pass){authError('Rellena email y contraseña');return}
+  if(pass.length<6){authError('La contraseña necesita 6+ caracteres');return}
+  $('#authBtnSignup').textContent='Creando...';
+  const {data,error}=await sb.auth.signUp({email,password:pass});
+  $('#authBtnSignup').textContent='Crear cuenta nueva';
+  if(error){authError(error.message);return}
+  if(data.user&&!data.session){authError('Cuenta creada. Revisa tu email para confirmar y luego entra.');return}
+  await onLoggedIn(data.user);
+}
+async function authLogout(){await sb.auth.signOut();location.reload()}
+async function onLoggedIn(user){
+  sbUser=user;cloudReady=true;
+  authError('Sincronizando...');
+  const cloud=await pullCloud();
+  if(cloud){
+    // La nube manda: es la fuente de verdad entre dispositivos
+    db=Object.assign(defaultDB(),cloud);
+    saveLocal(db);
+  }else{
+    // Primera vez en la nube: sube lo que haya en local
+    await pushCloud(db);
+  }
+  refreshWallets();migrate();
+  authShow(false);
+  render();syncPrices(false);
+  updateSyncInfo();
+}
 
 // ===================== WALLETS =====================
 let WALLETS={};
@@ -315,6 +402,7 @@ const today=()=>new Date().toISOString().slice(0,10);
 function migrate(){
   db.assets.forEach(a=>{
     if(a.id!=null)a.id=String(a.id);
+    if(a.symbol)a.symbol=a.symbol.toUpperCase();
     (a.purchases||[]).forEach(pu=>{if(pu.id!=null)pu.id=String(pu.id)});
     if(!a.purchases){
       a.purchases=[{id:uid(),qty:a.qty||0,price:a.buyPrice||0,date:a.dateAdded||today()}];
@@ -377,8 +465,9 @@ async function syncPrices(force){
 }
 function updateSyncInfo(){
   const el=$('#syncInfo');if(!el)return;
-  if(db.lastSync){const m=Math.round((Date.now()-db.lastSync)/60000);el.textContent=m<1?'Sync: ahora':'Sync: hace '+m+' min'}
-  else el.textContent='Sin sync';
+  const cloud=cloudReady&&sbUser?' ☁':'';
+  if(db.lastSync){const m=Math.round((Date.now()-db.lastSync)/60000);el.textContent=(m<1?'Sync: ahora':'Sync: hace '+m+' min')+cloud}
+  else el.textContent='Sin sync'+cloud;
 }
 
 // ===================== ROUTER =====================
@@ -564,8 +653,8 @@ function renderMyPortfolio(){
   h+=`<div class="metrics m4">`;
   h+=`<div class="metric"><div class="label">HODL</div><div class="val sm">${fmt(hodl)}</div></div>`;
   h+=`<div class="metric"><div class="label">DeFi</div><div class="val sm">${fmt(defiAll)}</div></div>`;
-  h+=`<div class="metric"><div class="label">P&L HODL</div><div class="val sm ${pnlClass(pnlHodl)}">${fmt(pnlHodl)}</div></div>`;
-  h+=`<div class="metric"><div class="label">P&L DeFi</div><div class="val sm ${pnlClass(pnlDefi)}">${fmt(pnlDefi)}</div></div>`;
+  h+=`<div class="metric"><div class="label">RENDIMIENTO HODL</div><div class="val sm ${pnlClass(pnlHodl)}">${fmt(pnlHodl)}</div></div>`;
+  h+=`<div class="metric"><div class="label">RENDIMIENTO DeFi</div><div class="val sm ${pnlClass(pnlDefi)}">${fmt(pnlDefi)}</div></div>`;
   h+=`</div>`;
   h+=renderPanels(assets,total,hodl,defiAll,'chart_my');
   h+=renderAssetTable(assets,true);
@@ -598,7 +687,7 @@ function renderPanels(assets,total,hodl,defi,chartId){
 
 function renderAssetTable(assets,showOrigin){
   if(!assets.length)return`<div class="empty"><div class="e-icon">📂</div><div class="e-title">Sin activos</div><div>Pulsa "+ Activo" para empezar</div></div>`;
-  let h=`<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Activo</th><th>Cantidad</th><th>Precio</th><th>P&L HODL</th>${showOrigin?'<th>Origen</th>':''}<th>Acciones</th></tr></thead><tbody>`;
+  let h=`<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Activo</th><th>Cantidad</th><th>Precio</th><th>RENDIMIENTO HODL</th>${showOrigin?'<th>Origen</th>':''}<th>Acciones</th></tr></thead><tbody>`;
   assets.forEach((a,i)=>{
     const v=assetVal(a);const pnl=(a.price-a.buyPrice)*a.qty;const roi=a.buyPrice?(pnl/(a.qty*a.buyPrice)*100):0;
     h+=`<tr><td><div class="asset-cell"><div class="asset-dot" style="background:${COLORS[i%COLORS.length]}"></div><div><div class="asset-sym">${a.symbol}</div><div class="asset-name">${a.name||''}</div></div></div></td>`;
@@ -684,7 +773,7 @@ function renderPools(app){
       h+=`<div class="pool-grid">`;
       h+=`<div class="pool-stat"><div class="ps-label">Capital</div><div class="ps-val">${fmt(cap)}</div></div>`;
       h+=`<div class="pool-stat"><div class="ps-label">${p.status==='closed'?'Val. salida':'Val. actual'}</div><div class="ps-val">${fmt(p.status==='closed'?poolExitVal(p):poolCurrentVal(p))}</div></div>`;
-      h+=`<div class="pool-stat"><div class="ps-label">P&L neta</div><div class="ps-val ${pnlClass(pnl)}">${fmt(pnl)}</div></div>`;
+      h+=`<div class="pool-stat"><div class="ps-label">RENDIMIENTO neto</div><div class="ps-val ${pnlClass(pnl)}">${fmt(pnl)}</div></div>`;
       h+=`<div class="pool-stat"><div class="ps-label">ROI / APY</div><div class="ps-val ${pnlClass(roi)}">${fmtPct(roi)} <span style="font-size:.78rem;color:var(--tx3)">${fmtP(apy)}% APY</span></div></div>`;
       h+=`</div>${renderV3Mini(p)}</div>`;
     });
@@ -783,7 +872,7 @@ function renderDetail(app){
     h+=`<div class="detail-section card"><h3>📈 Seguimiento</h3><div class="metrics m3">`;
     h+=`<div class="metric"><div class="label">Valor actual</div><div class="val sm">${fmt(poolCurrentVal(p))}</div></div>`;
     h+=`<div class="metric"><div class="label">Rewards/fees</div><div class="val sm">${fmt(poolIncome(p))}</div></div>`;
-    h+=`<div class="metric"><div class="label">P&L / ROI</div><div class="val sm ${pnlClass(pnl)}">${fmt(pnl)} (${fmtPct(roi)})</div></div></div></div>`;
+    h+=`<div class="metric"><div class="label">RENDIMIENTO / ROI</div><div class="val sm ${pnlClass(pnl)}">${fmt(pnl)} (${fmtPct(roi)})</div></div></div></div>`;
   }
   h+=renderV3Detail(p);
   // Rewards table
@@ -1110,8 +1199,18 @@ function handleImport(e){
 }
 
 // ===================== INIT =====================
-render();
-syncPrices(false);
+async function init(){
+  // Pinta ya con datos locales (rápido, offline)
+  refreshWallets();render();
+  // Comprueba sesión existente
+  const {data}=await sb.auth.getSession();
+  if(data&&data.session){
+    await onLoggedIn(data.session.user);
+  }else{
+    authShow(true);
+  }
+}
+init();
 </script>
 </body>
 </html>
