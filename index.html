@@ -126,6 +126,8 @@ tr:hover{background:var(--bg4)20}
 .pool-card:hover{border-color:var(--brd2);transform:translateY(-1px);box-shadow:var(--shadow)}
 .pool-card.closed{border-left-color:var(--tx3)}
 .pool-card.rewards{border-left-color:var(--ylw)}
+.pool-card.out-range{border-left-color:var(--red)}
+.pool-card.near-range{border-left-color:var(--ylw)}
 .pool-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
 .pool-pair{font-size:1.1rem;font-weight:700;letter-spacing:-.01em}
 .pool-meta{font-size:.8rem;color:var(--tx3)}
@@ -133,6 +135,10 @@ tr:hover{background:var(--bg4)20}
 .badge-active{background:#22c55e20;color:var(--grn)}
 .badge-closed{background:#6b6f8520;color:var(--tx3)}
 .badge-rewards{background:#eab30820;color:var(--ylw)}
+.badge-range-unknown{background:#4f8cff20;color:var(--acc)}
+.badge-range-in{background:#22c55e20;color:var(--grn)}
+.badge-range-near{background:#eab30820;color:var(--ylw)}
+.badge-range-out{background:#ef444420;color:var(--red)}
 .badge-reinvertido{background:#4f8cff20;color:var(--acc)}
 .badge-retirado{background:#22c55e20;color:var(--grn)}
 .badge-pendiente{background:#eab30820;color:var(--ylw)}
@@ -140,6 +146,22 @@ tr:hover{background:var(--bg4)20}
 .pool-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .pool-stat .ps-label{font-size:.74rem;color:var(--tx3);margin-bottom:2px}
 .pool-stat .ps-val{font-size:1rem;font-weight:600}
+.pool-v3-mini{margin-top:14px;padding-top:14px;border-top:1px solid var(--brd);display:grid;grid-template-columns:1.1fr .9fr .9fr .9fr;gap:12px;align-items:center}
+.range-line{height:8px;background:var(--bg3);border-radius:999px;position:relative;overflow:hidden}
+.range-line:before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#ef444440,#eab30840,#22c55e55,#eab30840,#ef444440)}
+.range-marker{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid var(--acc);transform:translate(-50%,-50%);box-shadow:0 0 0 4px #4f8cff20}
+.range-marker.out{border-color:var(--red);box-shadow:0 0 0 4px #ef444420}
+.range-marker.near{border-color:var(--ylw);box-shadow:0 0 0 4px #eab30820}
+.v3-label{font-size:.72rem;color:var(--tx3);margin-bottom:4px}
+.v3-val{font-size:.9rem;font-weight:600}
+.v3-range-wrap{display:flex;flex-direction:column;gap:7px}
+.v3-range-caps{display:flex;justify-content:space-between;font-size:.72rem;color:var(--tx3)}
+.v3-detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.v3-detail-card{background:var(--bg3);border:1px solid var(--brd);border-radius:var(--r2);padding:14px}
+.v3-detail-card .label{font-size:.72rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.v3-detail-card .val{font-size:1rem;font-weight:700}
+.v3-range-panel{background:var(--bg3);border:1px solid var(--brd);border-radius:var(--r2);padding:16px}
+.form-section-muted{background:var(--bg3);border:1px solid var(--brd);border-radius:var(--r2);padding:14px;margin-top:12px}
 
 /* DETAIL VIEW */
 .detail-header{margin-bottom:24px}
@@ -210,6 +232,7 @@ tr:hover{background:var(--bg4)20}
 @media(max-width:768px){
 .panels{grid-template-columns:1fr}
 .pool-grid{grid-template-columns:repeat(2,1fr)}
+.pool-v3-mini,.v3-detail-grid{grid-template-columns:1fr 1fr}
 .metrics.m3,.metrics.m4{grid-template-columns:repeat(2,1fr)}
 .comparison,.summary-grid{grid-template-columns:1fr}
 .wallet-sel{grid-template-columns:1fr}
@@ -296,6 +319,21 @@ function migrate(){
     }
     recalcAsset(a);
   });
+  db.positions.forEach(p=>{
+    p.version='v3';
+    if(!p.rangeAlertPct)p.rangeAlertPct=5;
+    if(p.curTaQty==null)p.curTaQty=p.taQty||0;
+    if(p.curTbQty==null)p.curTbQty=p.tbQty||0;
+    if(!p.rewards)p.rewards=[];
+    const oldClaimed=+p.v3FeesClaimed||0,oldPending=+p.v3FeesPending||0;
+    if(oldClaimed&&!p.rewards.some(r=>r.id==='migrated_v3_claimed')){
+      p.rewards.push({id:'migrated_v3_claimed',usd:oldClaimed,date:p.dateIn||today(),state:'retirado'});
+    }
+    if(oldPending&&!p.rewards.some(r=>r.id==='migrated_v3_pending')){
+      p.rewards.push({id:'migrated_v3_pending',usd:oldPending,date:p.dateIn||today(),state:'pendiente'});
+    }
+    p.v3FeesClaimed=0;p.v3FeesPending=0;
+  });
   saveDB(db);
 }
 function recalcAsset(a){
@@ -312,6 +350,9 @@ async function syncPrices(force){
   if(!force&&db.lastSync&&now-db.lastSync<600000)return;
   const ids=new Set();
   db.assets.forEach(a=>{const cg=CG_MAP[a.symbol.toUpperCase()];if(cg)ids.add(cg)});
+  db.positions.forEach(p=>{
+    [p.taSymbol,p.tbSymbol].forEach(sym=>{const cg=CG_MAP[(sym||'').toUpperCase()];if(cg)ids.add(cg)});
+  });
   if(!ids.size)return;
   try{
     const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+[...ids].join(',')+'&vs_currencies=usd');
@@ -319,6 +360,12 @@ async function syncPrices(force){
     db.assets.forEach(a=>{
       const cg=CG_MAP[a.symbol.toUpperCase()];
       if(cg&&d[cg]&&d[cg].usd)a.price=d[cg].usd;
+    });
+    db.positions.forEach(p=>{
+      const taCg=CG_MAP[(p.taSymbol||'').toUpperCase()],tbCg=CG_MAP[(p.tbSymbol||'').toUpperCase()];
+      if(taCg&&d[taCg]&&d[taCg].usd)p.taCurPrice=d[taCg].usd;
+      if(tbCg&&d[tbCg]&&d[tbCg].usd)p.tbCurPrice=d[tbCg].usd;
+      refreshPoolValue(p);
     });
     db.lastSync=Date.now();saveDB(db);render();
   }catch(e){console.warn('Sync failed',e)}
@@ -364,13 +411,92 @@ function getWalletAssets(wid){return db.assets.filter(a=>a.wallet===wid)}
 function assetVal(a){return(a.qty||0)*(a.price||0)}
 function assetPnl(a){return a.qty*(a.price-a.buyPrice)}
 function walletHodl(wid){return getWalletAssets(wid).reduce((s,a)=>s+assetVal(a),0)}
-function walletDefi(wid){return db.positions.filter(p=>p.wallet===wid&&p.status==='active').reduce((s,p)=>s+(+p.curVal||0),0)}
-function walletRewards(wid){return db.positions.filter(p=>p.wallet===wid).reduce((s,p)=>s+rewTotal(p),0)}
+function walletDefi(wid){return db.positions.filter(p=>p.wallet===wid&&p.status==='active').reduce((s,p)=>s+poolCurrentVal(p),0)}
+function walletRewards(wid){return db.positions.filter(p=>p.wallet===wid).reduce((s,p)=>s+poolIncome(p),0)}
 function poolCap(p){return(p.taQty*p.taPrice)+(p.tbQty*p.tbPrice)}
-function rewTotal(p){return(p.rewards||[]).reduce((s,r)=>s+(+r.usd||0),0)}
+function rewTotal(p){return(p.rewards||[]).reduce((s,r)=>s+(r.state==='reinvertido'?0:(+r.usd||0)),0)}
+function reinvestedRewards(p){return(p.rewards||[]).reduce((s,r)=>s+(r.state==='reinvertido'?(+r.usd||0):0),0)}
+function rewardPending(p){return(p.rewards||[]).reduce((s,r)=>s+(r.state==='pendiente'?(+r.usd||0):0),0)}
+function rewardClaimed(p){return(p.rewards||[]).reduce((s,r)=>s+(r.state==='retirado'?(+r.usd||0):0),0)}
+function poolIncome(p){return rewTotal(p)}
+function tokenUsdPrice(sym,fallback,p){
+  const s=(sym||'').toUpperCase();
+  const stable=['USDC','USDT','DAI','USDS','PYUSD','EURC'];
+  if(stable.includes(s))return 1;
+  if(p&&(p.taSymbol||'').toUpperCase()===s&&+p.taCurPrice>0)return+p.taCurPrice;
+  if(p&&(p.tbSymbol||'').toUpperCase()===s&&+p.tbCurPrice>0)return+p.tbCurPrice;
+  const a=db.assets.find(x=>(x.symbol||'').toUpperCase()===s&&+x.price>0);
+  return a?+a.price:(+fallback||0);
+}
+function poolTokenPrice(p,side){return side==='a'?tokenUsdPrice(p.taSymbol,p.taPrice,p):tokenUsdPrice(p.tbSymbol,p.tbPrice,p)}
+function poolCurrentVal(p){
+  const qa=+p.curTaQty||0,qb=+p.curTbQty||0;
+  const val=(qa*poolTokenPrice(p,'a'))+(qb*poolTokenPrice(p,'b'));
+  return val>0?val:(+p.curVal||0);
+}
+function refreshPoolValue(p){p.curVal=poolCurrentVal(p)}
+function v3CurrentPrice(p){
+  const direct=+p.curPriceAB||0;if(direct>0)return direct;
+  const ta=poolTokenPrice(p,'a'),tb=poolTokenPrice(p,'b');
+  return tb>0?ta/tb:0;
+}
+function v3RangeInfo(p){
+  const price=v3CurrentPrice(p),a=+p.rangeMin||0,b=+p.rangeMax||0;
+  if(!price||!a||!b)return{ready:false,status:'unknown',label:'Sin rango',price};
+  const min=Math.min(a,b),max=Math.max(a,b),alert=+p.rangeAlertPct||5;
+  if(max<=min)return{ready:false,status:'unknown',label:'Rango inválido',price,min,max};
+  const pos=Math.max(0,Math.min(100,((price-min)/(max-min))*100));
+  const width=((max-min)/((min+max)/2))*100;
+  if(price<min){
+    const d=((min-price)/price)*100;
+    return{ready:true,status:'out',label:'Fuera por abajo',price,min,max,pos:0,distance:d,width,alert};
+  }
+  if(price>max){
+    const d=((price-max)/price)*100;
+    return{ready:true,status:'out',label:'Fuera por arriba',price,min,max,pos:100,distance:d,width,alert};
+  }
+  const d=Math.min((price-min)/price,(max-price)/price)*100;
+  const near=d<=alert;
+  return{ready:true,status:near?'near':'in',label:near?'Cerca del borde':'En rango',price,min,max,pos,distance:d,width,alert};
+}
+function v3FeeApr(p){
+  const cap=poolCap(p),fees=poolIncome(p),d=poolDays(p);
+  return cap&&d?fees/cap*365/d*100:0;
+}
+function v3DepositAmountsFromUsd(p,usd){
+  usd=+usd||0;if(usd<=0)return{ta:0,tb:0};
+  const pa=poolTokenPrice(p,'a'),pb=poolTokenPrice(p,'b'),price=v3CurrentPrice(p);
+  const min=Math.min(+p.rangeMin||0,+p.rangeMax||0),max=Math.max(+p.rangeMin||0,+p.rangeMax||0);
+  if(!pa||!pb)return{ta:0,tb:0};
+  if(!price||!min||!max||max<=min){
+    const cur=poolCurrentVal(p),taVal=(+p.curTaQty||0)*pa,taShare=cur?taVal/cur:0.5;
+    return{ta:(usd*taShare)/pa,tb:(usd*(1-taShare))/pb};
+  }
+  if(price<=min)return{ta:usd/pa,tb:0};
+  if(price>=max)return{ta:0,tb:usd/pb};
+  const sp=Math.sqrt(price),sl=Math.sqrt(min),su=Math.sqrt(max);
+  const taUnit=(su-sp)/(sp*su),tbUnit=sp-sl;
+  const unitValue=taUnit*pa+tbUnit*pb;
+  if(unitValue<=0)return{ta:usd/(pa*2),tb:usd/(pb*2)};
+  const liq=usd/unitValue;
+  return{ta:taUnit*liq,tb:tbUnit*liq};
+}
+function applyReinvestedReward(p,r,sign){
+  if(!p||!r||r.state!=='reinvertido')return;
+  if(sign<0&&!(+r.taQty||+r.tbQty))return;
+  const amt=(+r.taQty||+r.tbQty)?{ta:+r.taQty||0,tb:+r.tbQty||0}:v3DepositAmountsFromUsd(p,+r.usd||0);
+  r.taQty=amt.ta;r.tbQty=amt.tb;r.taPrice=poolTokenPrice(p,'a');r.tbPrice=poolTokenPrice(p,'b');
+  p.curTaQty=(+p.curTaQty||0)+(sign*amt.ta);
+  p.curTbQty=(+p.curTbQty||0)+(sign*amt.tb);
+  refreshPoolValue(p);
+}
+function v3StatusBadge(p){
+  const i=v3RangeInfo(p),cls=i.status==='out'?'badge-range-out':i.status==='near'?'badge-range-near':i.status==='in'?'badge-range-in':'badge-range-unknown';
+  return `<span class="badge ${cls}">${i.label}</span>`;
+}
 function poolPnl(p){
-  if(p.status==='closed'){return((p.exitTaQty*p.exitTaPrice)+(p.exitTbQty*p.exitTbPrice))+(+p.exitFees||0)+rewTotal(p)-poolCap(p)}
-  return(+p.curVal||0)+rewTotal(p)-poolCap(p);
+  if(p.status==='closed'){return((p.exitTaQty*p.exitTaPrice)+(p.exitTbQty*p.exitTbPrice))+(+p.exitFees||0)+poolIncome(p)-poolCap(p)}
+  return poolCurrentVal(p)+poolIncome(p)-poolCap(p);
 }
 function poolRoi(p){const c=poolCap(p);return c?poolPnl(p)/c*100:0}
 function poolDays(p){return daysBetween(p.dateIn,p.dateOut||today())}
@@ -426,7 +552,7 @@ function renderMyPortfolio(){
   const assets=Object.values(map).map(a=>{a.buyPrice=a.qty>0?a.totalCost/a.qty:0;return a});
   const hodl=assets.reduce((s,a)=>s+a.qty*a.price,0);
   const defiAll=db.positions.filter(p=>p.status==='active').reduce((s,p)=>{
-    const m=p.wallet==='wallet1'?1:0.5;return s+(+p.curVal||0)*m},0);
+    const m=p.wallet==='wallet1'?1:0.5;return s+poolCurrentVal(p)*m},0);
   const total=hodl+defiAll;
   const pnlHodl=assets.reduce((s,a)=>s+(a.price-a.buyPrice)*a.qty,0);
   const pnlDefi=db.positions.reduce((s,p)=>{const m=p.wallet==='wallet1'?1:0.5;return s+poolPnl(p)*m},0);
@@ -525,28 +651,81 @@ function renderPools(app){
     h+=`<button class="pill ${f===w?'active':''}" onclick="state.poolFilter='${w}';render()">${WALLETS[w].name} (${cnt(w)})</button>`;
   });
   h+=`</div>`;
+  const activeV3=pools.filter(p=>p.status==='active');
+  if(activeV3.length){
+    const inRange=activeV3.filter(p=>v3RangeInfo(p).status==='in').length;
+    const nearRange=activeV3.filter(p=>v3RangeInfo(p).status==='near').length;
+    const outRange=activeV3.filter(p=>v3RangeInfo(p).status==='out').length;
+    const pendingFees=activeV3.reduce((s,p)=>s+rewardPending(p),0);
+    h+=`<div class="metrics m4">`;
+    h+=`<div class="metric"><div class="label">V3 en rango</div><div class="val sm pnl-pos">${inRange}</div></div>`;
+    h+=`<div class="metric"><div class="label">Cerca del borde</div><div class="val sm ${nearRange?'pnl-neg':''}">${nearRange}</div></div>`;
+    h+=`<div class="metric"><div class="label">Fuera de rango</div><div class="val sm ${outRange?'pnl-neg':''}">${outRange}</div></div>`;
+    h+=`<div class="metric"><div class="label">Rewards pendientes</div><div class="val sm">${fmt(pendingFees)}</div></div>`;
+    h+=`</div>`;
+  }
   if(!pools.length){h+=`<div class="empty"><div class="e-icon">🌊</div><div class="e-title">Sin posiciones DeFi</div><div>Pulsa "+ Nueva posición" para empezar</div></div>`}
   else{
     h+=`<div class="pool-list">`;
     pools.forEach(p=>{
       const cap=poolCap(p),pnl=poolPnl(p),roi=poolRoi(p),apy=poolApy(p);
       const hasPending=(p.rewards||[]).some(r=>r.state==='pendiente');
-      const statusClass=p.status==='closed'?'closed':hasPending?'rewards':'';
+      const rangeInfo=v3RangeInfo(p);
+      const v3Class=p.status==='active'?(rangeInfo.status==='out'?'out-range':rangeInfo.status==='near'?'near-range':''):'';
+      const statusClass=p.status==='closed'?'closed':hasPending?'rewards':v3Class;
       const badge=p.status==='closed'?'<span class="badge badge-closed">Cerrada</span>':hasPending?'<span class="badge badge-rewards">Rewards pendientes</span>':'<span class="badge badge-active">Activa</span>';
       h+=`<div class="pool-card ${statusClass}" onclick="go('detail',{detailId:'${p.id}'})">`;
       h+=`<div class="pool-top"><div><div class="pool-pair">${p.taSymbol}/${p.tbSymbol}</div><div class="pool-meta">${p.protocol||''} · ${p.network||''}</div></div>`;
-      h+=`<div style="display:flex;gap:8px;align-items:center">${badge}<span class="wtag" style="background:${WALLETS[p.wallet]?.color||'#666'}20;color:${WALLETS[p.wallet]?.color||'#666'}">${WALLETS[p.wallet]?.name||p.wallet}</span></div></div>`;
+      h+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badge}${v3StatusBadge(p)}<span class="wtag" style="background:${WALLETS[p.wallet]?.color||'#666'}20;color:${WALLETS[p.wallet]?.color||'#666'}">${WALLETS[p.wallet]?.name||p.wallet}</span></div></div>`;
       h+=`<div class="pool-grid">`;
       h+=`<div class="pool-stat"><div class="ps-label">Capital</div><div class="ps-val">${fmt(cap)}</div></div>`;
-      h+=`<div class="pool-stat"><div class="ps-label">${p.status==='closed'?'Val. salida':'Val. actual'}</div><div class="ps-val">${fmt(p.status==='closed'?poolExitVal(p):(+p.curVal||0))}</div></div>`;
+      h+=`<div class="pool-stat"><div class="ps-label">${p.status==='closed'?'Val. salida':'Val. actual'}</div><div class="ps-val">${fmt(p.status==='closed'?poolExitVal(p):poolCurrentVal(p))}</div></div>`;
       h+=`<div class="pool-stat"><div class="ps-label">P&L neta</div><div class="ps-val ${pnlClass(pnl)}">${fmt(pnl)}</div></div>`;
       h+=`<div class="pool-stat"><div class="ps-label">ROI / APY</div><div class="ps-val ${pnlClass(roi)}">${fmtPct(roi)} <span style="font-size:.78rem;color:var(--tx3)">${fmtP(apy)}% APY</span></div></div>`;
-      h+=`</div></div>`;
+      h+=`</div>${renderV3Mini(p)}</div>`;
     });
     h+=`</div>`;
   }
   h+=`</div>`;
   app.innerHTML=h;
+}
+
+function renderV3Mini(p){
+  const i=v3RangeInfo(p),markerCls=i.status==='out'?'out':i.status==='near'?'near':'';
+  const price=i.price?fmtP(i.price):'0.00';
+  return `<div class="pool-v3-mini">
+    <div class="v3-range-wrap">
+      <div class="v3-range-caps"><span>${i.ready?fmtP(i.min):'Min'}</span><span>${i.ready?fmtP(i.max):'Max'}</span></div>
+      <div class="range-line"><span class="range-marker ${markerCls}" style="left:${i.ready?i.pos:50}%"></span></div>
+    </div>
+    <div><div class="v3-label">Precio ${p.taSymbol}/${p.tbSymbol}</div><div class="v3-val">${price}</div></div>
+    <div><div class="v3-label">Borde más cercano</div><div class="v3-val ${i.status==='out'||i.status==='near'?'pnl-neg':''}">${i.ready?fmtP(i.distance)+'%':'—'}</div></div>
+    <div><div class="v3-label">Rewards / APR</div><div class="v3-val">${fmt(poolIncome(p))} <span style="font-size:.78rem;color:var(--tx3)">${fmtP(v3FeeApr(p))}%</span></div></div>
+  </div>`;
+}
+
+function renderV3Detail(p){
+  const i=v3RangeInfo(p),markerCls=i.status==='out'?'out':i.status==='near'?'near':'';
+  return `<div class="detail-section card"><h3>Control V3</h3>
+    <div class="v3-detail-grid">
+      <div class="v3-detail-card"><div class="label">Estado</div><div class="val">${i.label}</div></div>
+      <div class="v3-detail-card"><div class="label">Precio actual</div><div class="val">${i.price?fmtP(i.price):'0.00'} ${p.tbSymbol}/${p.taSymbol}</div></div>
+      <div class="v3-detail-card"><div class="label">Distancia borde</div><div class="val ${i.status==='out'||i.status==='near'?'pnl-neg':'pnl-pos'}">${i.ready?fmtP(i.distance)+'%':'—'}</div></div>
+      <div class="v3-detail-card"><div class="label">APR rewards</div><div class="val">${fmtP(v3FeeApr(p))}%</div></div>
+      <div class="v3-detail-card"><div class="label">Fee tier</div><div class="val">${p.feeTier?fmtP(+p.feeTier)+'%':'—'}</div></div>
+      <div class="v3-detail-card"><div class="label">Reclamado fuera</div><div class="val">${fmt(rewardClaimed(p))}</div></div>
+      <div class="v3-detail-card"><div class="label">Pendiente</div><div class="val">${fmt(rewardPending(p))}</div></div>
+      <div class="v3-detail-card"><div class="label">Reinvertido</div><div class="val">${fmt(reinvestedRewards(p))}</div></div>
+      <div class="v3-detail-card"><div class="label">${p.taSymbol} actual</div><div class="val">${fmtQty(+p.curTaQty||0)}</div></div>
+      <div class="v3-detail-card"><div class="label">${p.tbSymbol} actual</div><div class="val">${fmtQty(+p.curTbQty||0)}</div></div>
+      <div class="v3-detail-card"><div class="label">Precio ${p.taSymbol}</div><div class="val">${fmtPrice(poolTokenPrice(p,'a'))}</div></div>
+      <div class="v3-detail-card"><div class="label">Precio ${p.tbSymbol}</div><div class="val">${fmtPrice(poolTokenPrice(p,'b'))}</div></div>
+    </div>
+    <div class="v3-range-panel">
+      <div class="v3-range-caps"><span>Min ${i.ready?fmtP(i.min):'—'}</span><span>Max ${i.ready?fmtP(i.max):'—'}</span></div>
+      <div class="range-line" style="margin-top:10px"><span class="range-marker ${markerCls}" style="left:${i.ready?i.pos:50}%"></span></div>
+    </div>
+  </div>`;
 }
 
 // ===================== DETAIL =====================
@@ -584,11 +763,11 @@ function renderDetail(app){
     h+=`<div style="display:flex;justify-content:space-between;font-weight:700;font-size:1.05rem"><span>IL</span><span class="${il>0?'pnl-neg':'pnl-pos'}">${il>0?'-':''}${fmt(Math.abs(il))}</span></div>`;
     h+=`<div style="margin-top:8px;font-size:.82rem;color:var(--tx3)">${il>0?'La pool rebalanceó tus tokens de forma desfavorable respecto a mantenerlos en HODL.':'No hubo impermanent loss, o fue favorable.'}</div></div></div>`;
     // Worth it?
-    const defiTotal=ev+(+p.exitFees||0)+rewTotal(p);
+    const defiTotal=ev+(+p.exitFees||0)+poolIncome(p);
     const diff=defiTotal-holdVal;
     h+=`<div class="detail-section"><h3>🤔 ¿Mereció la pena?</h3><div class="comparison">`;
     h+=`<div class="comp-card"><h4>Si hubieras hecho HODL</h4><div class="cv">${fmt(holdVal)}</div><div style="font-size:.82rem;color:var(--tx3);margin-top:4px">Tokens al precio de salida</div></div>`;
-    h+=`<div class="comp-card"><h4>Con la pool DeFi</h4><div class="cv">${fmt(defiTotal)}</div><div style="font-size:.82rem;color:var(--tx3);margin-top:4px">Valor salida + rewards</div></div></div>`;
+    h+=`<div class="comp-card"><h4>Con la pool DeFi</h4><div class="cv">${fmt(defiTotal)}</div><div style="font-size:.82rem;color:var(--tx3);margin-top:4px">Valor salida + rewards/fees</div></div></div>`;
     h+=`<div class="verdict ${diff>=0?'pos':'neg'}">${diff>=0?'✅ La pool generó':'❌ La pool perdió'} ${fmt(Math.abs(diff))} vs HODL</div></div>`;
     // Rebalance
     const exitTaPct=ev?((p.exitTaQty*p.exitTaPrice)/ev*100):50;
@@ -598,10 +777,11 @@ function renderDetail(app){
   }else{
     // Active: tracking
     h+=`<div class="detail-section card"><h3>📈 Seguimiento</h3><div class="metrics m3">`;
-    h+=`<div class="metric"><div class="label">Valor actual</div><div class="val sm">${fmt(+p.curVal||0)}</div></div>`;
-    h+=`<div class="metric"><div class="label">Rewards acum.</div><div class="val sm">${fmt(rewTotal(p))}</div></div>`;
+    h+=`<div class="metric"><div class="label">Valor actual</div><div class="val sm">${fmt(poolCurrentVal(p))}</div></div>`;
+    h+=`<div class="metric"><div class="label">Rewards/fees</div><div class="val sm">${fmt(poolIncome(p))}</div></div>`;
     h+=`<div class="metric"><div class="label">P&L / ROI</div><div class="val sm ${pnlClass(pnl)}">${fmt(pnl)} (${fmtPct(roi)})</div></div></div></div>`;
   }
+  h+=renderV3Detail(p);
   // Rewards table
   h+=`<div class="detail-section card"><h3>🎁 Rewards reclamados</h3>`;
   if(!(p.rewards||[]).length){h+=`<div style="color:var(--tx3);font-size:.88rem">Sin rewards registrados</div>`}
@@ -609,7 +789,8 @@ function renderDetail(app){
     h+=`<div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Importe</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
     (p.rewards||[]).forEach(r=>{
       const bc=r.state==='reinvertido'?'badge-reinvertido':r.state==='pendiente'?'badge-pendiente':'badge-retirado';
-      h+=`<tr><td>${r.date||''}</td><td>${fmt(+r.usd)}</td><td><span class="badge ${bc}">${r.state}</span></td>`;
+      const rSub=r.state==='reinvertido'?`<div class="price-sub">+${fmtQty(+r.taQty||0)} ${p.taSymbol} / +${fmtQty(+r.tbQty||0)} ${p.tbSymbol}</div>`:'';
+      h+=`<tr><td>${r.date||''}</td><td>${fmt(+r.usd)}${rSub}</td><td><span class="badge ${bc}">${r.state}</span></td>`;
       h+=`<td><div class="actions"><button class="act-btn" onclick="editReward('${p.id}','${r.id}')">✎</button><button class="act-btn del" onclick="deleteReward('${p.id}','${r.id}')">✕</button></div></td></tr>`;
     });
     h+=`</tbody></table></div>`;
@@ -636,11 +817,11 @@ function renderSummary(app){
   const totalDefi=walletDefi('wallet1')+walletDefi('wallet2');
   const total=totalHodl+totalDefi;
   const plusvalia=db.assets.reduce((s,a)=>s+assetPnl(a),0);
-  const totalRew=db.positions.reduce((s,p)=>s+rewTotal(p),0);
+  const totalRew=db.positions.reduce((s,p)=>s+poolIncome(p),0);
   let h=`<div class="fade-in"><div class="metrics m3">`;
   h+=`<div class="metric hero"><div class="label">Portfolio total</div><div class="val">${fmt(total)}</div><div class="sub">HODL ${fmt(totalHodl)} + DeFi ${fmt(totalDefi)}</div></div>`;
   h+=`<div class="metric"><div class="label">Plusvalía</div><div class="val ${pnlClass(plusvalia)}">${fmt(plusvalia)}</div><div class="sub">Revalorización vs precio medio</div></div>`;
-  h+=`<div class="metric"><div class="label">Rewards totales</div><div class="val pnl-pos">${fmt(totalRew)}</div><div class="sub">Todas las pools</div></div></div>`;
+  h+=`<div class="metric"><div class="label">Rewards/fees totales</div><div class="val pnl-pos">${fmt(totalRew)}</div><div class="sub">Todas las pools</div></div></div>`;
   h+=`<div class="summary-grid">`;
   ['wallet1','wallet2'].forEach(wid=>{
     const w=WALLETS[wid];const h1=walletHodl(wid);const d1=walletDefi(wid);const rew=walletRewards(wid);
@@ -667,12 +848,14 @@ function renderSummary(app){
     h+=`</div>`;
   }
   // Alerts
-  const pending=db.positions.filter(p=>p.status==='active'&&(p.rewards||[]).some(r=>r.state==='pendiente'));
+  const pending=db.positions.filter(p=>p.status==='active'&&(rewardPending(p)>0||v3RangeInfo(p).status==='out'||v3RangeInfo(p).status==='near'));
   if(pending.length){
-    h+=`<div class="alert-panel"><div class="card-header">⚠ Alerts — Rewards pendientes</div>`;
+    h+=`<div class="alert-panel"><div class="card-header">⚠ Alerts — Pools a revisar</div>`;
     pending.forEach(p=>{
       const pRew=(p.rewards||[]).filter(r=>r.state==='pendiente').reduce((s,r)=>s+(+r.usd||0),0);
-      h+=`<div class="alert-item" onclick="go('detail',{detailId:'${p.id}'})" style="cursor:pointer"><span>${p.taSymbol}/${p.tbSymbol} — ${WALLETS[p.wallet]?.name||p.wallet}</span><span class="pnl-pos">${fmt(pRew)} pendiente</span></div>`;
+      const rInfo=v3RangeInfo(p);
+      const note=rInfo.status==='out'?rInfo.label:rInfo.status==='near'?'Cerca del borde':'Rewards pendientes';
+      h+=`<div class="alert-item" onclick="go('detail',{detailId:'${p.id}'})" style="cursor:pointer"><span>${p.taSymbol}/${p.tbSymbol} — ${WALLETS[p.wallet]?.name||p.wallet}</span><span class="${rInfo.status==='out'||rInfo.status==='near'?'pnl-neg':'pnl-pos'}">${note} · ${fmt(pRew)}</span></div>`;
     });
     h+=`</div>`;
   }
@@ -790,11 +973,18 @@ function openPoolModal(pid){
   openModal(`<h2>${title}</h2>
     <div class="form-group"><label>Wallet</label><select id="ppWallet"><option value="wallet1" ${p?.wallet==='wallet1'?'selected':''}>${WALLETS.wallet1.name}</option><option value="wallet2" ${p?.wallet==='wallet2'?'selected':''}>${WALLETS.wallet2.name}</option></select></div>
     <div class="form-row"><div class="form-group"><label>Protocolo</label><input id="ppProto" value="${p?.protocol||''}" placeholder="PancakeSwap"></div><div class="form-group"><label>Red</label><input id="ppNet" value="${p?.network||''}" placeholder="Base"></div></div>
+    <div class="form-group"><label>Fee tier (%)</label><input id="ppFeeTier" type="number" step="any" value="${p?.feeTier||''}" placeholder="0.30"></div>
     <div class="divider"></div><h3 style="margin-bottom:12px;font-size:.95rem">Token A</h3>
     <div class="form-row3"><div class="form-group"><label>Símbolo</label><input id="ppTaS" value="${p?.taSymbol||''}" placeholder="ETH"></div><div class="form-group"><label>Cantidad</label><input id="ppTaQ" type="number" step="any" value="${p?.taQty||''}"></div><div class="form-group"><label>Precio entrada</label><input id="ppTaP" type="number" step="any" value="${p?.taPrice||''}"></div></div>
     <h3 style="margin-bottom:12px;font-size:.95rem">Token B</h3>
     <div class="form-row3"><div class="form-group"><label>Símbolo</label><input id="ppTbS" value="${p?.tbSymbol||''}" placeholder="USDC"></div><div class="form-group"><label>Cantidad</label><input id="ppTbQ" type="number" step="any" value="${p?.tbQty||''}"></div><div class="form-group"><label>Precio entrada</label><input id="ppTbP" type="number" step="any" value="${p?.tbPrice||''}"></div></div>
-    <div class="form-row"><div class="form-group"><label>Fecha entrada</label><input id="ppDateIn" type="date" value="${p?.dateIn||today()}"></div><div class="form-group"><label>Valor actual (USD)</label><input id="ppCurVal" type="number" step="any" value="${p?.curVal||''}"></div></div>
+    <div class="form-group"><label>Fecha entrada</label><input id="ppDateIn" type="date" value="${p?.dateIn||today()}"></div>
+    <div class="form-section-muted">
+      <h3 style="margin-bottom:12px;font-size:.95rem">Control V3</h3>
+      <div class="form-row3"><div class="form-group"><label>Precio actual A/B</label><input id="ppCurPriceAB" type="number" step="any" value="${p?.curPriceAB||''}" placeholder="USDC por ETH"></div><div class="form-group"><label>Rango mínimo</label><input id="ppRangeMin" type="number" step="any" value="${p?.rangeMin||''}"></div><div class="form-group"><label>Rango máximo</label><input id="ppRangeMax" type="number" step="any" value="${p?.rangeMax||''}"></div></div>
+      <div class="form-row"><div class="form-group"><label>Cantidad actual ${p?.taSymbol||'Token A'}</label><input id="ppCurTaQ" type="number" step="any" value="${p?.curTaQty??p?.taQty??''}"></div><div class="form-group"><label>Cantidad actual ${p?.tbSymbol||'Token B'}</label><input id="ppCurTbQ" type="number" step="any" value="${p?.curTbQty??p?.tbQty??''}"></div></div>
+      <div class="form-group"><label>Alerta borde (%)</label><input id="ppRangeAlert" type="number" step="any" value="${p?.rangeAlertPct||5}"></div>
+    </div>
     ${p?.status==='closed'?`
     <div class="divider"></div><h3 style="margin-bottom:12px;font-size:.95rem">Datos de cierre</h3>
     <div class="form-row3"><div class="form-group"><label>${p.taSymbol} salida qty</label><input id="ppExTaQ" type="number" step="any" value="${p.exitTaQty||''}"></div><div class="form-group"><label>${p.taSymbol} precio salida</label><input id="ppExTaP" type="number" step="any" value="${p.exitTaPrice||''}"></div><div class="form-group"><label>Fecha salida</label><input id="ppDateOut" type="date" value="${p.dateOut||''}"></div></div>
@@ -804,11 +994,17 @@ function openPoolModal(pid){
 function openEditPool(pid){openPoolModal(pid)}
 function savePool(pid){
   const isEdit=!!pid;
-  const p=isEdit?db.positions.find(x=>x.id===pid):{id:uid(),status:'active',rewards:[]};
+  const p=isEdit?db.positions.find(x=>x.id===pid):{id:uid(),status:'active',rewards:[],version:'v3'};
   p.wallet=$('#ppWallet').value;p.protocol=$('#ppProto').value;p.network=$('#ppNet').value;
+  p.version='v3';p.feeTier=+$('#ppFeeTier').value||0;
   p.taSymbol=($('#ppTaS').value||'').toUpperCase();p.taQty=+$('#ppTaQ').value||0;p.taPrice=+$('#ppTaP').value||0;
   p.tbSymbol=($('#ppTbS').value||'').toUpperCase();p.tbQty=+$('#ppTbQ').value||0;p.tbPrice=+$('#ppTbP').value||0;
-  p.dateIn=$('#ppDateIn').value||today();p.curVal=+$('#ppCurVal').value||0;
+  p.dateIn=$('#ppDateIn').value||today();
+  const curTaRaw=$('#ppCurTaQ').value,curTbRaw=$('#ppCurTbQ').value;
+  p.curPriceAB=+$('#ppCurPriceAB').value||0;p.rangeMin=+$('#ppRangeMin').value||0;p.rangeMax=+$('#ppRangeMax').value||0;
+  p.curTaQty=curTaRaw===''?p.taQty:(+curTaRaw||0);p.curTbQty=curTbRaw===''?p.tbQty:(+curTbRaw||0);
+  p.rangeAlertPct=+$('#ppRangeAlert').value||5;
+  refreshPoolValue(p);
   if(p.status==='closed'){
     const el=id=>document.getElementById(id);
     if(el('ppExTaQ')){p.exitTaQty=+el('ppExTaQ').value||0;p.exitTaPrice=+el('ppExTaP').value||0;p.exitTbQty=+el('ppExTbQ').value||0;p.exitTbPrice=+el('ppExTbP').value||0;p.exitFees=+el('ppExFees').value||0;p.dateOut=el('ppDateOut').value||today()}
@@ -821,18 +1017,20 @@ function savePool(pid){
 // Close position
 function closePosition(pid){
   const p=db.positions.find(x=>x.id===pid);if(!p)return;
+  const taPrice=poolTokenPrice(p,'a'),tbPrice=poolTokenPrice(p,'b');
   openModal(`<h2>Cerrar posición — ${p.taSymbol}/${p.tbSymbol}</h2>
-    <div class="form-row3"><div class="form-group"><label>${p.taSymbol} salida qty</label><input id="cpExTaQ" type="number" step="any"></div><div class="form-group"><label>${p.taSymbol} precio salida</label><input id="cpExTaP" type="number" step="any"></div><div class="form-group"><label>Fecha salida</label><input id="cpDateOut" type="date" value="${today()}"></div></div>
-    <div class="form-row3"><div class="form-group"><label>${p.tbSymbol} salida qty</label><input id="cpExTbQ" type="number" step="any"></div><div class="form-group"><label>${p.tbSymbol} precio salida</label><input id="cpExTbP" type="number" step="any"></div><div class="form-group"><label>Fees salida (USD)</label><input id="cpExFees" type="number" step="any" value="0"></div></div>
+    <div class="form-row3"><div class="form-group"><label>${p.taSymbol} salida qty</label><input id="cpExTaQ" type="number" step="any" value="${p.curTaQty||''}"></div><div class="form-group"><label>${p.taSymbol} precio salida</label><input id="cpExTaP" type="number" step="any" value="${taPrice||''}"></div><div class="form-group"><label>Fecha salida</label><input id="cpDateOut" type="date" value="${today()}"></div></div>
+    <div class="form-row3"><div class="form-group"><label>${p.tbSymbol} salida qty</label><input id="cpExTbQ" type="number" step="any" value="${p.curTbQty||''}"></div><div class="form-group"><label>${p.tbSymbol} precio salida</label><input id="cpExTbP" type="number" step="any" value="${tbPrice||''}"></div><div class="form-group"><label>Fees extra cierre (USD)</label><input id="cpExFees" type="number" step="any" value="0"></div></div>
     <div class="hint" style="margin-bottom:12px">Los tokens se devolverán al HODL de la misma wallet.</div>
     <button class="btn btn-warning" onclick="confirmClose('${p.id}')" style="width:100%">Confirmar cierre</button>`);
 }
 function confirmClose(pid){
   const p=db.positions.find(x=>x.id===pid);if(!p)return;
   p.status='closed';
-  p.exitTaQty=+$('#cpExTaQ').value||0;p.exitTaPrice=+$('#cpExTaP').value||0;
-  p.exitTbQty=+$('#cpExTbQ').value||0;p.exitTbPrice=+$('#cpExTbP').value||0;
+  p.exitTaQty=+$('#cpExTaQ').value||0;p.exitTaPrice=+$('#cpExTaP').value||poolTokenPrice(p,'a');
+  p.exitTbQty=+$('#cpExTbQ').value||0;p.exitTbPrice=+$('#cpExTbP').value||poolTokenPrice(p,'b');
   p.exitFees=+$('#cpExFees').value||0;p.dateOut=$('#cpDateOut').value||today();
+  p.curTaQty=p.exitTaQty;p.curTbQty=p.exitTbQty;p.curVal=poolExitVal(p);
   // Return tokens to HODL
   [['taSymbol','exitTaQty','exitTaPrice'],['tbSymbol','exitTbQty','exitTbPrice']].forEach(([sKey,qKey,pKey])=>{
     const sym=p[sKey];const qty=p[qKey];const price=p[pKey];
@@ -859,19 +1057,31 @@ function openRewardModal(pid,rid){
   const r=rid?(p.rewards||[]).find(x=>x.id===rid):null;
   openModal(`<h2>${r?'Editar':'Nuevo'} Reward — ${p.taSymbol}/${p.tbSymbol}</h2>
     <div class="form-row"><div class="form-group"><label>Importe (USD)</label><input id="rwUsd" type="number" step="any" value="${r?.usd||''}"></div><div class="form-group"><label>Fecha</label><input id="rwDate" type="date" value="${r?.date||today()}"></div></div>
-    <div class="form-group"><label>Estado</label><select id="rwState"><option value="pendiente" ${r?.state==='pendiente'?'selected':''}>Pendiente</option><option value="reinvertido" ${r?.state==='reinvertido'?'selected':''}>Reinvertido</option><option value="retirado" ${r?.state==='retirado'?'selected':''}>Retirado</option></select></div>
+    <div class="form-group"><label>Acción</label><select id="rwState"><option value="pendiente" ${r?.state==='pendiente'?'selected':''}>Pendiente</option><option value="reinvertido" ${r?.state==='reinvertido'?'selected':''}>Reinvertir en la pool</option><option value="retirado" ${r?.state==='retirado'?'selected':''}>Reclamar fuera de la wallet</option></select></div>
     <button class="btn btn-primary" onclick="saveReward('${pid}','${rid||''}')" style="width:100%;margin-top:8px">Guardar</button>`);
 }
 function editReward(pid,rid){openRewardModal(pid,rid)}
 function saveReward(pid,rid){
   const p=db.positions.find(x=>x.id===pid);if(!p)return;
   if(!p.rewards)p.rewards=[];
-  if(rid){const r=p.rewards.find(x=>x.id===rid);if(r){r.usd=+$('#rwUsd').value||0;r.date=$('#rwDate').value;r.state=$('#rwState').value}}
-  else{p.rewards.push({id:uid(),usd:+$('#rwUsd').value||0,date:$('#rwDate').value||today(),state:$('#rwState').value||'pendiente'})}
+  if(rid){
+    const r=p.rewards.find(x=>x.id===rid);
+    if(r){
+      applyReinvestedReward(p,r,-1);
+      r.usd=+$('#rwUsd').value||0;r.date=$('#rwDate').value;r.state=$('#rwState').value;r.taQty=0;r.tbQty=0;
+      applyReinvestedReward(p,r,1);
+    }
+  }else{
+    const r={id:uid(),usd:+$('#rwUsd').value||0,date:$('#rwDate').value||today(),state:$('#rwState').value||'pendiente'};
+    applyReinvestedReward(p,r,1);
+    p.rewards.push(r);
+  }
   saveDB(db);closeModal();render();
 }
 function deleteReward(pid,rid){
   const p=db.positions.find(x=>x.id===pid);if(!p)return;
+  const r=(p.rewards||[]).find(x=>x.id===rid);
+  if(r)applyReinvestedReward(p,r,-1);
   p.rewards=(p.rewards||[]).filter(r=>r.id!==rid);saveDB(db);render();
 }
 
