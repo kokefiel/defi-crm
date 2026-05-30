@@ -314,12 +314,16 @@ const today=()=>new Date().toISOString().slice(0,10);
 // Migrate purchases
 function migrate(){
   db.assets.forEach(a=>{
+    if(a.id!=null)a.id=String(a.id);
+    (a.purchases||[]).forEach(pu=>{if(pu.id!=null)pu.id=String(pu.id)});
     if(!a.purchases){
       a.purchases=[{id:uid(),qty:a.qty||0,price:a.buyPrice||0,date:a.dateAdded||today()}];
     }
     recalcAsset(a);
   });
   db.positions.forEach(p=>{
+    if(p.id!=null)p.id=String(p.id);
+    (p.rewards||[]).forEach(r=>{if(r.id!=null)r.id=String(r.id)});
     p.version='v3';
     if(!p.rangeAlertPct)p.rangeAlertPct=5;
     if(p.curTaQty==null)p.curTaQty=p.taQty||0;
