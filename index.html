@@ -313,18 +313,20 @@ function saveDB(d){
 async function pushCloud(d){
   try{
     const {error}=await sb.from('crypto_crm').upsert({user_id:sbUser.id,data:d,updated_at:new Date().toISOString()});
-    if(error)console.warn('Cloud save error:',error.message);
-    else updateSyncInfo();
-  }catch(e){console.warn('Cloud save failed',e)}
+    if(error){console.warn('Cloud save error:',error.message);return false}
+    updateSyncInfo();return true;
+  }catch(e){console.warn('Cloud save failed',e);return false}
 }
+// Devuelve {ok,data} para distinguir error de red (ok:false) de usuario sin datos (ok:true,data:null)
 async function pullCloud(){
   try{
     const {data,error}=await sb.from('crypto_crm').select('data,updated_at').eq('user_id',sbUser.id).maybeSingle();
-    if(error){console.warn('Cloud load error:',error.message);return null}
-    return data?data.data:null;
-  }catch(e){console.warn('Cloud load failed',e);return null}
+    if(error){console.warn('Cloud load error:',error.message);return {ok:false,data:null}}
+    return {ok:true,data:data?data.data:null};
+  }catch(e){console.warn('Cloud load failed',e);return {ok:false,data:null}}
 }
 function defaultDB(){return{config:{wallet1Name:'Wallet 1',wallet2Name:'Wallet 2 (compartida)'},assets:[],positions:[],lastSync:0}}
+function dbIsEmpty(d){return !d||((!d.assets||!d.assets.length)&&(!d.positions||!d.positions.length))}
 let db=loadDB();
 
 // ===================== AUTH =====================
@@ -354,17 +356,31 @@ async function authSignup(){
 }
 async function authLogout(){await sb.auth.signOut();location.reload()}
 async function onLoggedIn(user){
-  sbUser=user;cloudReady=true;
+  sbUser=user;
   authError('Sincronizando...');
-  const cloud=await pullCloud();
-  if(cloud){
-    // La nube manda: es la fuente de verdad entre dispositivos
-    db=Object.assign(defaultDB(),cloud);
+  const res=await pullCloud();
+
+  if(!res.ok){
+    // ERROR de red/permisos: NO subir nada para no pisar datos buenos. Trabajar en local y reintentar.
+    cloudReady=false;
+    authError('Sin conexión con la nube. Trabajando en local, no se sobreescribirá nada.');
+    authShow(false);
+    refreshWallets();migrate({skipCloud:true});render();
+    updateSyncInfo();
+    setTimeout(()=>{onLoggedIn(user)},5000);
+    return;
+  }
+
+  cloudReady=true;
+  if(res.data){
+    // Hay datos en la nube: fuente de verdad entre dispositivos
+    db=Object.assign(defaultDB(),res.data);
     saveLocal(db);
   }else{
-    // Primera vez en la nube: sube lo que haya en local
-    await pushCloud(db);
+    // Usuario nuevo REAL (ok:true,data:null): solo subir si hay algo local
+    if(!dbIsEmpty(db)) await pushCloud(db);
   }
+  authError('');
   refreshWallets();migrate();
   authShow(false);
   render();syncPrices(false);
@@ -399,13 +415,14 @@ const daysBetween=(a,b)=>Math.max(1,Math.round((new Date(b)-new Date(a))/864e5))
 const today=()=>new Date().toISOString().slice(0,10);
 
 // Migrate purchases
-function migrate(){
+function migrate(opts){
+  opts=opts||{};
   db.assets.forEach(a=>{
     if(a.id!=null)a.id=String(a.id);
     if(a.symbol)a.symbol=a.symbol.toUpperCase();
     (a.purchases||[]).forEach(pu=>{if(pu.id!=null)pu.id=String(pu.id)});
     if(!a.purchases){
-      a.purchases=[{id:uid(),qty:a.qty||0,price:a.buyPrice||0,date:a.dateAdded||today()}];
+      a.purchases=[{id:uid(),qty:+a.qty||0,price:+a.buyPrice||0,date:a.dateAdded||today()}];
     }
     recalcAsset(a);
   });
@@ -426,15 +443,16 @@ function migrate(){
     }
     p.v3FeesClaimed=0;p.v3FeesPending=0;
   });
-  saveDB(db);
+  if(opts.skipCloud){saveLocal(db)}else{saveDB(db)}
 }
 function recalcAsset(a){
   if(!a.purchases||!a.purchases.length){a.qty=0;a.buyPrice=0;return}
   let tq=0,tv=0;
-  a.purchases.forEach(p=>{tq+=+p.qty;tv+=p.qty*p.price});
+  a.purchases.forEach(p=>{const q=+p.qty||0,pr=+p.price||0;tq+=q;tv+=q*pr});
   a.qty=tq;a.buyPrice=tq>0?tv/tq:0;
 }
-migrate();
+// NOTA: migrate() de arranque eliminado a propósito. Ahora corre dentro de
+// onLoggedIn/init con el DB correcto, evitando subir datos a la nube antes de tiempo.
 
 // ===================== COINGECKO =====================
 async function syncPrices(force){
@@ -1203,10 +1221,16 @@ async function init(){
   // Pinta ya con datos locales (rápido, offline)
   refreshWallets();render();
   // Comprueba sesión existente
-  const {data}=await sb.auth.getSession();
-  if(data&&data.session){
-    await onLoggedIn(data.session.user);
-  }else{
+  try{
+    const {data}=await sb.auth.getSession();
+    if(data&&data.session){
+      await onLoggedIn(data.session.user);
+    }else{
+      authShow(true);
+    }
+  }catch(e){
+    console.warn('Auth init failed',e);
+    authError('No se pudo conectar. Trabajando en local.');
     authShow(true);
   }
 }
