@@ -241,18 +241,27 @@ tr:hover{background:var(--bg4)20}
 .nav-btn{padding:7px 12px;font-size:.82rem;white-space:nowrap}
 }
 
-/* BOTTOM NAV (barra inferior estilo móvil) */
-.botnav{display:none}
-@media(max-width:768px){
-.botnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:120;height:62px;padding:0 4px env(safe-area-inset-bottom,0);background:var(--bg2);border-top:1px solid var(--brd2);backdrop-filter:blur(20px);align-items:center;justify-content:space-around}
-.botnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:100%;background:transparent;color:var(--tx3);font-size:.64rem;font-weight:600;letter-spacing:.01em}
+/* NAV BAR (misma navegación en móvil y escritorio, adaptada)
+   La navegación vive en la barra inferior; la de arriba queda como cabecera de marca + utilidades. */
+.nav .nav-btn,.nav .nav-sep,.nav #btnAdd{display:none}
+.nav-brand{font-weight:700;font-size:1rem;letter-spacing:.02em;color:var(--tx)}
+/* Escritorio: dock flotante centrado */
+.botnav{display:flex;position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:120;height:60px;gap:4px;padding:6px 10px;background:var(--bg2);border:1px solid var(--brd2);border-radius:18px;box-shadow:0 12px 40px #0008;backdrop-filter:blur(20px);align-items:center}
+.botnav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 18px;height:100%;background:transparent;color:var(--tx3);font-size:.84rem;font-weight:600;letter-spacing:.01em;border-radius:12px}
+.botnav-btn:hover{color:var(--tx)}
 .botnav-btn .bn-ic{font-size:1.2rem;line-height:1;opacity:.75}
 .botnav-btn.active{color:var(--acc)}
 .botnav-btn.active .bn-ic{opacity:1}
-.botnav-fab{flex:0 0 auto;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:1.7rem;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px #4f8cff55;transform:translateY(-8px)}
-.botnav-fab:active{transform:translateY(-8px) scale(.94)}
-.nav .nav-btn,.nav .nav-sep,.nav #btnAdd{display:none}
-.main{padding-bottom:88px}
+.botnav-fab{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:1.6rem;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px #4f8cff66;transform:translateY(-6px)}
+.botnav-fab:hover{filter:brightness(1.12)}
+.botnav-fab:active{transform:translateY(-6px) scale(.94)}
+.main{padding-bottom:104px}
+/* Móvil: barra completa pegada abajo */
+@media(max-width:768px){
+.botnav{left:0;right:0;transform:none;bottom:0;height:62px;gap:0;padding:0 2px env(safe-area-inset-bottom,0);border:none;border-top:1px solid var(--brd2);border-radius:0;box-shadow:0 -4px 20px #0006;justify-content:space-around}
+.botnav-btn{flex:1;padding:0;font-size:.74rem}
+.botnav-fab{transform:translateY(-8px)}
+.nav-brand{font-size:.92rem}
 }
 
 /* ANIMATIONS */
@@ -284,6 +293,7 @@ tr:hover{background:var(--bg4)20}
   </div>
 </div>
 <nav class="nav" id="nav">
+  <span class="nav-brand">✦ CRM Crypto</span>
   <button class="nav-btn active" data-view="portfolio" onclick="go('portfolio')">Portfolio</button>
   <div class="nav-sep"></div>
   <button class="nav-btn" data-view="pools" onclick="go('pools')">Pools DeFi</button>
@@ -297,11 +307,11 @@ tr:hover{background:var(--bg4)20}
   </div>
 </nav>
 <nav class="botnav" id="botnav">
-  <button class="botnav-btn active" data-view="portfolio" onclick="go('portfolio')"><span class="bn-ic">📊</span>Portfolio</button>
-  <button class="botnav-btn" data-view="pools" onclick="go('pools')"><span class="bn-ic">💧</span>Pools</button>
+  <button class="botnav-btn active" data-view="portfolio" onclick="go('portfolio')">Portfolio</button>
+  <button class="botnav-btn" data-view="pools" onclick="go('pools')">Pools</button>
   <button class="botnav-fab" onclick="onAdd()" title="Añadir">+</button>
-  <button class="botnav-btn" data-view="summary" onclick="go('summary')"><span class="bn-ic">📈</span>Resumen</button>
-  <button class="botnav-btn" onclick="openConfig()"><span class="bn-ic">⚙</span>Ajustes</button>
+  <button class="botnav-btn" data-view="evolution" onclick="go('evolution')">Evolución</button>
+  <button class="botnav-btn" data-view="summary" onclick="go('summary')">Resumen</button>
 </nav>
 <div class="main" id="app"></div>
 
@@ -346,7 +356,7 @@ async function pullCloud(){
     return {ok:true,data:data?data.data:null};
   }catch(e){console.warn('Cloud load failed',e);return {ok:false,data:null}}
 }
-function defaultDB(){return{config:{wallet1Name:'Wallet 1',wallet2Name:'Wallet 2 (compartida)'},assets:[],positions:[],lastSync:0}}
+function defaultDB(){return{config:{wallet1Name:'Wallet 1',wallet2Name:'Wallet 2 (compartida)'},assets:[],positions:[],snapshots:[],lastSync:0}}
 function dbIsEmpty(d){return !d||((!d.assets||!d.assets.length)&&(!d.positions||!d.positions.length))}
 let db=loadDB();
 
@@ -438,6 +448,7 @@ const today=()=>new Date().toISOString().slice(0,10);
 // Migrate purchases
 function migrate(opts){
   opts=opts||{};
+  if(!db.snapshots)db.snapshots=[];
   db.assets.forEach(a=>{
     if(a.id!=null)a.id=String(a.id);
     if(a.symbol)a.symbol=a.symbol.toUpperCase();
@@ -498,6 +509,7 @@ async function syncPrices(force){
       if(tbCg&&d[tbCg]&&d[tbCg].usd)p.tbCurPrice=d[tbCg].usd;
       refreshPoolValue(p);
     });
+    captureSnapshot();
     db.lastSync=Date.now();saveDB(db);render();
   }catch(e){console.warn('Sync failed',e)}
   updateSyncInfo();
@@ -535,6 +547,7 @@ function render(){
   else if(state.view==='pools')renderPools(app);
   else if(state.view==='detail')renderDetail(app);
   else if(state.view==='summary')renderSummary(app);
+  else if(state.view==='evolution')renderEvolution(app);
   updateSyncInfo();
 }
 
@@ -645,6 +658,7 @@ function renderPortfolio(app){
   h+=`</div><div class="bar-actions">`;
   h+=`<button class="btn btn-secondary" onclick="exportDB()">Exportar</button>`;
   h+=`<button class="btn btn-secondary" onclick="$('#fileInput').click()">Importar</button>`;
+  h+=`<button class="btn btn-secondary" onclick="openCmcImport()">Importar CMC</button>`;
   h+=`</div></div>`;
   if(isAll)h+=renderAllWallets();
   else h+=renderMyPortfolio();
@@ -995,6 +1009,105 @@ function renderSummary(app){
   app.innerHTML=h;
 }
 
+// ===================== EVOLUCIÓN =====================
+const dateMs=d=>new Date((d||today())+'T00:00:00').getTime();
+// Totales actuales del portfolio (HODL + DeFi activo), todas las wallets al 100%
+function portfolioTotals(){
+  let value=0,cost=0;
+  db.assets.forEach(a=>{value+=assetVal(a);cost+=(a.qty||0)*(a.buyPrice||0)});
+  db.positions.forEach(p=>{if(p.status==='active'){value+=poolCurrentVal(p);cost+=poolCap(p)}});
+  return {value,cost};
+}
+// Guarda una foto del valor/coste de hoy (una por día; si ya hay, la actualiza)
+function captureSnapshot(){
+  if(!db.snapshots)db.snapshots=[];
+  const t=portfolioTotals();
+  if(!(t.value>0))return;
+  const d=today(),ex=db.snapshots.find(s=>s.date===d);
+  if(ex){ex.value=t.value;ex.cost=t.cost}else db.snapshots.push({date:d,value:t.value,cost:t.cost});
+}
+// Línea de COSTE acumulado, reconstruida desde todo el historial (exacta, sin API)
+function buildCostSeries(){
+  const evts=[];
+  db.assets.forEach(a=>(a.purchases||[]).forEach(p=>evts.push({date:p.date||today(),d:(+p.qty||0)*(+p.price||0)})));
+  db.positions.forEach(p=>{
+    if(p.dateIn)evts.push({date:p.dateIn,d:poolCap(p)});
+    if(p.status==='closed'&&p.dateOut)evts.push({date:p.dateOut,d:-poolCap(p)});
+  });
+  evts.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  let cum=0;const pts=[];
+  evts.forEach(e=>{cum+=e.d;const t=dateMs(e.date);const last=pts[pts.length-1];if(last&&last.t===t)last.v=cum;else pts.push({t,v:cum})});
+  return pts;
+}
+// Línea de VALOR de mercado: snapshots guardados + el valor en vivo de hoy
+function buildValueSeries(){
+  const pts=(db.snapshots||[]).filter(s=>s.value>0).map(s=>({t:dateMs(s.date),v:s.value}));
+  const t=portfolioTotals();
+  if(t.value>0){const tm=dateMs(today()),last=pts[pts.length-1];if(last&&last.t===tm)last.v=t.value;else pts.push({t:tm,v:t.value})}
+  pts.sort((a,b)=>a.t-b.t);
+  return pts;
+}
+function evoCutoff(range){const now=Date.now(),d=864e5;if(range==='1m')return now-30*d;if(range==='3m')return now-90*d;if(range==='1y')return now-365*d;return 0}
+function renderEvolution(app){
+  const t=portfolioTotals(),pnl=t.value-t.cost,range=state.evoRange||'all';
+  let h=`<div class="fade-in">`;
+  h+=`<div class="metrics m3">`;
+  h+=`<div class="metric hero"><div class="label">Valor actual</div><div class="val">${fmt(t.value)}</div></div>`;
+  h+=`<div class="metric"><div class="label">Invertido (coste)</div><div class="val sm">${fmt(t.cost)}</div></div>`;
+  h+=`<div class="metric"><div class="label">Ganancia / pérdida</div><div class="val sm ${pnlClass(pnl)}">${fmt(pnl)} <span style="font-size:.8rem;color:var(--tx3)">${t.cost?fmtPct(pnl/t.cost*100):''}</span></div></div>`;
+  h+=`</div>`;
+  h+=`<div class="pool-filters">`;
+  [['1m','1 mes'],['3m','3 meses'],['1y','1 año'],['all','Todo']].forEach(([k,lbl])=>{h+=`<button class="pill ${range===k?'active':''}" onclick="state.evoRange='${k}';render()">${lbl}</button>`});
+  h+=`</div>`;
+  h+=`<div class="card"><div class="card-header">Evolución del portfolio</div>`;
+  h+=`<div style="display:flex;gap:16px;margin-bottom:12px;font-size:.8rem;color:var(--tx2)">`;
+  h+=`<span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:3px;background:var(--grn);border-radius:2px"></span>Valor de mercado</span>`;
+  h+=`<span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:0;border-top:3px dashed var(--tx3)"></span>Invertido (coste)</span></div>`;
+  h+=`<div style="position:relative"><canvas id="evoChart" style="width:100%;height:280px;display:block"></canvas></div>`;
+  if((db.snapshots||[]).length<2)h+=`<div class="hint" style="margin-top:12px">La línea de <strong>coste</strong> usa todo tu historial (compras y ventas). La de <strong>valor de mercado</strong> se va dibujando cada vez que pulsas sincronizar (↻); de momento tiene pocos puntos, en unos días tendrás la curva. Más adelante le añadimos el histórico de CoinGecko para rellenar el pasado.</div>`;
+  h+=`</div></div>`;
+  app.innerHTML=h;
+  setTimeout(()=>drawEvoChart(buildCostSeries(),buildValueSeries(),range),60);
+}
+function drawEvoChart(cost,value,range){
+  const c=document.getElementById('evoChart');if(!c)return;
+  const dpr=window.devicePixelRatio||1,cssW=c.clientWidth||600,cssH=c.clientHeight||280;
+  c.width=cssW*dpr;c.height=cssH*dpr;
+  const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,cssW,cssH);
+  const cut=evoCutoff(range);
+  let fcost=cost.filter(p=>p.t>=cut),fval=value.filter(p=>p.t>=cut);
+  // Para que la línea de coste no empiece en 0 al recortar el rango, anclo el valor previo al borde izquierdo
+  if(cut>0){
+    const prevC=cost.filter(p=>p.t<cut).pop();if(prevC)fcost=[{t:cut,v:prevC.v},...fcost];
+    const prevV=value.filter(p=>p.t<cut).pop();if(prevV&&fval.length)fval=[{t:cut,v:prevV.v},...fval];
+  }
+  const all=[...fcost,...fval];
+  if(!all.length){ctx.fillStyle='#6b6f85';ctx.font='13px sans-serif';ctx.fillText('Sin datos en este rango todavía',16,40);return}
+  let tMin=Math.min(...all.map(p=>p.t)),tMax=Math.max(...all.map(p=>p.t));
+  if(tMin===tMax){tMin-=864e5;tMax+=864e5}
+  const vMax=Math.max(...all.map(p=>p.v),0)*1.1||1,padT=12,padB=10,padX=6,W=cssW,H=cssH;
+  const X=t=>padX+((t-tMin)/(tMax-tMin))*(W-2*padX);
+  const Y=v=>H-padB-(v/vMax)*(H-padT-padB);
+  // línea base
+  ctx.strokeStyle='#ffffff10';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(padX,H-padB);ctx.lineTo(W-padX,H-padB);ctx.stroke();
+  // COSTE (escalonada, discontinua)
+  if(fcost.length){
+    ctx.beginPath();ctx.setLineDash([5,4]);ctx.lineWidth=2;ctx.strokeStyle='#8b90a8';
+    fcost.forEach((p,i)=>{const x=X(p.t),y=Y(p.v);if(i===0)ctx.moveTo(x,y);else{ctx.lineTo(x,Y(fcost[i-1].v));ctx.lineTo(x,y)}});
+    ctx.lineTo(W-padX,Y(fcost[fcost.length-1].v));ctx.stroke();ctx.setLineDash([]);
+  }
+  // VALOR (línea + área)
+  if(fval.length===1){
+    ctx.fillStyle='#22c55e';ctx.beginPath();ctx.arc(X(fval[0].t),Y(fval[0].v),3.5,0,7);ctx.fill();
+  }else if(fval.length>1){
+    ctx.beginPath();ctx.lineWidth=2.6;ctx.strokeStyle='#22c55e';
+    fval.forEach((p,i)=>{const x=X(p.t),y=Y(p.v);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
+    ctx.stroke();
+    ctx.lineTo(X(fval[fval.length-1].t),H-padB);ctx.lineTo(X(fval[0].t),H-padB);ctx.closePath();
+    const g=ctx.createLinearGradient(0,padT,0,H);g.addColorStop(0,'#22c55e38');g.addColorStop(1,'#22c55e03');ctx.fillStyle=g;ctx.fill();
+  }
+}
+
 // ===================== MODALS =====================
 function openModal(html){$('#modalContent').innerHTML=html;$('#modalOverlay').classList.add('open')}
 function closeModal(){$('#modalOverlay').classList.remove('open')}
@@ -1331,6 +1444,140 @@ function handleImport(e){
     }catch(err){alert('Error al parsear JSON: '+err.message)}
   };
   reader.readAsText(f);e.target.value='';
+}
+
+// ===================== IMPORTAR COINMARKETCAP =====================
+// Lee el CSV de transacciones de CMC y reconstruye los activos con su historial.
+// Decisiones del usuario: historial completo + transferIn a coste 0.
+function parseCSV(text){
+  const rows=[];let row=[],field='',inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){if(text[i+1]==='"'){field+='"';i++}else inQ=false}
+      else field+=c;
+    }else{
+      if(c==='"')inQ=true;
+      else if(c===','){row.push(field);field=''}
+      else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(field);if(row.length>1||row[0]!=='')rows.push(row);row=[];field=''}
+      else field+=c;
+    }
+  }
+  if(field!==''||row.length){row.push(field);rows.push(row)}
+  return rows;
+}
+function cmcNum(s){if(s==null)return NaN;s=String(s).trim();if(s===''||s==='--')return NaN;return parseFloat(s.replace(/,/g,''))}
+function cmcMedian(arr){if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2}
+function parseCmcTransactions(text){
+  const rows=parseCSV(text);
+  let hi=-1;
+  for(let i=0;i<rows.length;i++){const low=rows[i].map(x=>(x||'').trim().toLowerCase());if(low.includes('token')&&low.includes('type')){hi=i;break}}
+  if(hi<0)return {txs:[],repriced:[]};
+  const head=rows[hi].map(x=>(x||'').trim().toLowerCase());
+  const idx={date:head.findIndex(h=>h.startsWith('date')),token:head.indexOf('token'),type:head.indexOf('type'),price:head.findIndex(h=>h.startsWith('price')),amount:head.indexOf('amount'),total:head.findIndex(h=>h.startsWith('total'))};
+  const raw=[];
+  for(let i=hi+1;i<rows.length;i++){
+    const r=rows[i];if(!r)continue;
+    const token=(r[idx.token]||'').trim().toUpperCase();
+    const type=(r[idx.type]||'').trim().toLowerCase();
+    if(!token||!type)continue;
+    const date=(r[idx.date]||'').trim().slice(0,10);
+    const amount=cmcNum(r[idx.amount]);
+    const price=cmcNum(r[idx.price]);
+    const total=idx.total>=0?cmcNum(r[idx.total]):NaN;
+    if(!(amount>0))continue;
+    raw.push({token,type,date,amount,price:isNaN(price)?0:price,total:isNaN(total)?0:total});
+  }
+  // Mediana de precio por token (solo compras/ventas con precio) para detectar filas corruptas
+  const byTok={};
+  raw.forEach(t=>{if((t.type==='buy'||t.type==='sell')&&t.price>0)(byTok[t.token]=byTok[t.token]||[]).push(t.price)});
+  const med={};Object.keys(byTok).forEach(k=>med[k]=cmcMedian(byTok[k]));
+  const txs=[],repriced=[];
+  raw.forEach(t=>{
+    const m=med[t.token];
+    // Solo las COMPRAS con precio disparatado se re-precian a la mediana (se conserva la cantidad,
+    // que CMC sí cuenta en el saldo). Las ventas usan el coste medio vigente, así que el precio
+    // del CSV es irrelevante para ellas.
+    if(t.type==='buy'&&m>0&&(t.price>m*50||t.price<m/50||t.total>1e6)){
+      repriced.push({token:t.token,date:t.date,bad:t.price,fixed:m});
+      t.price=m;
+    }
+    txs.push(t);
+  });
+  return {txs,repriced};
+}
+function cmcReconstruct(txs,transferMode){
+  const sorted=[...txs].sort((a,b)=>(a.date<b.date?-1:a.date>b.date?1:0));
+  const acc={};let nBuy=0,nSell=0,nTransfer=0;
+  sorted.forEach(t=>{
+    if(!acc[t.token])acc[t.token]={symbol:t.token,qty:0,cost:0,entries:[]};
+    const a=acc[t.token];
+    if(t.type==='buy'){a.qty+=t.amount;a.cost+=t.amount*t.price;a.entries.push({id:uid(),qty:t.amount,price:t.price,date:t.date||today()});nBuy++}
+    else if(t.type==='transferin'){
+      if(transferMode==='ignore')return;
+      a.qty+=t.amount;a.entries.push({id:uid(),qty:t.amount,price:0,date:t.date||today()});nTransfer++;
+    }
+    else if(t.type==='sell'||t.type==='transferout'){
+      const avg=a.qty>0?a.cost/a.qty:0; // venta al coste medio vigente (no altera el PM del resto)
+      a.cost-=t.amount*avg;if(a.cost<0)a.cost=0;a.qty-=t.amount;
+      a.entries.push({id:uid(),qty:-t.amount,price:avg,date:t.date||today()});nSell++;
+    }
+  });
+  Object.values(acc).forEach(a=>{a.finalQty=a.qty;a.avgCost=a.qty>0?a.cost/a.qty:0});
+  return {assets:acc,stats:{nBuy,nSell,nTransfer}};
+}
+function openCmcImport(){
+  openModal(`<h2>Importar de CoinMarketCap</h2>
+    <div class="hint" style="margin-bottom:14px">Sube el archivo <strong>..._transactions.csv</strong> de CoinMarketCap. Reconstruyo tus activos con su historial (compras, ventas y fechas) y fusiono en la wallet que elijas.</div>
+    <div class="form-group"><label>Wallet destino</label><select id="cmcWallet"><option value="wallet1">${WALLETS.wallet1.name}</option><option value="wallet2">${WALLETS.wallet2.name}</option></select></div>
+    <div class="form-group"><label>Archivo de transacciones (.csv)</label><input type="file" id="cmcFile" accept=".csv"></div>
+    <div class="form-group"><label>Transferencias / airdrops (transferIn)</label><select id="cmcTransfer"><option value="zero">Coste 0 (recomendado)</option><option value="ignore">Ignorarlas</option></select></div>
+    <button class="btn btn-primary" onclick="cmcAnalyze()" style="width:100%;margin-top:8px">Analizar archivo</button>`);
+}
+function cmcAnalyze(){
+  const fileEl=$('#cmcFile');
+  if(!fileEl||!fileEl.files||!fileEl.files[0]){alert('Elige el archivo CSV de transacciones de CoinMarketCap');return}
+  const wallet=$('#cmcWallet').value,transferMode=$('#cmcTransfer').value;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const parsed=parseCmcTransactions(ev.target.result);
+    if(!parsed.txs.length){alert('No encontré transacciones válidas. Asegúrate de subir el archivo _transactions.csv de CoinMarketCap.');return}
+    const rec=cmcReconstruct(parsed.txs,transferMode);
+    window.__cmcStaging={wallet,assets:rec.assets,stats:rec.stats,repriced:parsed.repriced};
+    renderCmcPreview();
+  };
+  reader.readAsText(fileEl.files[0]);
+}
+function renderCmcPreview(){
+  const s=window.__cmcStaging;if(!s)return;
+  const items=Object.values(s.assets).filter(a=>a.finalQty>1e-9).sort((a,b)=>(b.finalQty*b.avgCost)-(a.finalQty*a.avgCost));
+  const zero=Object.values(s.assets).filter(a=>!(a.finalQty>1e-9)).length;
+  let h=`<h2>Revisar importación</h2>`;
+  h+=`<div class="preview-box"><div class="pv-label">Resumen</div><div class="pv-val" style="font-size:.9rem;line-height:1.7">`;
+  h+=`<strong>${items.length}</strong> activos → ${WALLETS[s.wallet].name}<br>`;
+  h+=`Compras: ${s.stats.nBuy} · Ventas: ${s.stats.nSell} · Transferencias coste 0: ${s.stats.nTransfer}<br>`;
+  if(s.repriced.length)h+=`<span class="pnl-neg">⚠️ ${s.repriced.length} precio(s) corrupto(s) corregido(s) a la mediana</span><br>`;
+  if(zero)h+=`<span style="color:var(--tx3)">${zero} moneda(s) con saldo 0 (vendidas) no se añaden</span>`;
+  h+=`</div></div>`;
+  h+=`<div class="tbl-wrap" style="max-height:260px;overflow-y:auto"><table><thead><tr><th>Token</th><th>Cantidad</th><th>Precio medio</th></tr></thead><tbody>`;
+  items.forEach(a=>{h+=`<tr><td class="asset-sym">${a.symbol}</td><td>${fmtQty(a.finalQty)}</td><td>${fmtPrice(a.avgCost)}</td></tr>`});
+  h+=`</tbody></table></div>`;
+  if(s.repriced.length)h+=`<div class="hint" style="margin-top:10px">Precios corregidos: ${s.repriced.slice(0,8).map(x=>x.token+' ('+x.date+')').join(', ')}${s.repriced.length>8?'…':''}</div>`;
+  h+=`<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-primary" onclick="cmcConfirm()" style="flex:1">Confirmar importación</button><button class="btn btn-secondary" onclick="openCmcImport()" style="flex:1">Volver</button></div>`;
+  $('#modalContent').innerHTML=h;
+}
+function cmcConfirm(){
+  const s=window.__cmcStaging;if(!s)return;
+  let added=0,merged=0;
+  Object.values(s.assets).forEach(t=>{
+    if(!(t.finalQty>1e-9))return;
+    let ex=db.assets.find(a=>a.wallet===s.wallet&&a.symbol===t.symbol);
+    if(ex){t.entries.forEach(e=>ex.purchases.push(e));recalcAsset(ex);merged++}
+    else{const a={id:uid(),wallet:s.wallet,symbol:t.symbol,name:t.symbol,price:0,purchases:t.entries.slice(),qty:0,buyPrice:0};recalcAsset(a);db.assets.push(a);added++}
+  });
+  window.__cmcStaging=null;
+  saveDB(db);closeModal();go('portfolio');syncPrices(true);
+  setTimeout(()=>alert('Importación completada: '+added+' nuevos, '+merged+' fusionados.\nPulsa ↻ si algún precio actual sale a 0 (tokens no listados se ponen a mano).'),150);
 }
 
 // ===================== INIT =====================
