@@ -241,6 +241,20 @@ tr:hover{background:var(--bg4)20}
 .nav-btn{padding:7px 12px;font-size:.82rem;white-space:nowrap}
 }
 
+/* BOTTOM NAV (barra inferior estilo móvil) */
+.botnav{display:none}
+@media(max-width:768px){
+.botnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:120;height:62px;padding:0 4px env(safe-area-inset-bottom,0);background:var(--bg2);border-top:1px solid var(--brd2);backdrop-filter:blur(20px);align-items:center;justify-content:space-around}
+.botnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:100%;background:transparent;color:var(--tx3);font-size:.64rem;font-weight:600;letter-spacing:.01em}
+.botnav-btn .bn-ic{font-size:1.2rem;line-height:1;opacity:.75}
+.botnav-btn.active{color:var(--acc)}
+.botnav-btn.active .bn-ic{opacity:1}
+.botnav-fab{flex:0 0 auto;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:1.7rem;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px #4f8cff55;transform:translateY(-8px)}
+.botnav-fab:active{transform:translateY(-8px) scale(.94)}
+.nav .nav-btn,.nav .nav-sep,.nav #btnAdd{display:none}
+.main{padding-bottom:88px}
+}
+
 /* ANIMATIONS */
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn .3s ease}
@@ -270,10 +284,10 @@ tr:hover{background:var(--bg4)20}
   </div>
 </div>
 <nav class="nav" id="nav">
-  <button class="nav-btn active" onclick="go('portfolio')">Portfolio</button>
+  <button class="nav-btn active" data-view="portfolio" onclick="go('portfolio')">Portfolio</button>
   <div class="nav-sep"></div>
-  <button class="nav-btn" onclick="go('pools')">Pools DeFi</button>
-  <button class="nav-btn" onclick="go('summary')">Resumen</button>
+  <button class="nav-btn" data-view="pools" onclick="go('pools')">Pools DeFi</button>
+  <button class="nav-btn" data-view="summary" onclick="go('summary')">Resumen</button>
   <div class="nav-right">
     <button class="btn-add" id="btnAdd" onclick="onAdd()">+ Activo</button>
     <button class="nav-icon" onclick="syncPrices(true)" title="Actualizar precios">↻</button>
@@ -281,6 +295,13 @@ tr:hover{background:var(--bg4)20}
     <span id="syncInfo"></span>
     <button class="nav-icon" onclick="openConfig()" title="Configuración">⚙</button>
   </div>
+</nav>
+<nav class="botnav" id="botnav">
+  <button class="botnav-btn active" data-view="portfolio" onclick="go('portfolio')"><span class="bn-ic">📊</span>Portfolio</button>
+  <button class="botnav-btn" data-view="pools" onclick="go('pools')"><span class="bn-ic">💧</span>Pools</button>
+  <button class="botnav-fab" onclick="onAdd()" title="Añadir">+</button>
+  <button class="botnav-btn" data-view="summary" onclick="go('summary')"><span class="bn-ic">📈</span>Resumen</button>
+  <button class="botnav-btn" onclick="openConfig()"><span class="bn-ic">⚙</span>Ajustes</button>
 </nav>
 <div class="main" id="app"></div>
 
@@ -492,9 +513,8 @@ function updateSyncInfo(){
 function go(v,opts){
   state.view=v;
   if(opts)Object.assign(state,opts);
-  document.querySelectorAll('.nav-btn').forEach((b,i)=>{
-    const views=['portfolio','pools','summary'];
-    b.classList.toggle('active',views[i]===v);
+  document.querySelectorAll('[data-view]').forEach(b=>{
+    b.classList.toggle('active',b.getAttribute('data-view')===v);
   });
   const addBtn=$('#btnAdd');
   if(v==='portfolio'){addBtn.textContent='+ Activo';addBtn.style.display=''}
@@ -503,8 +523,9 @@ function go(v,opts){
   render();
 }
 function onAdd(){
-  if(state.view==='portfolio')openAssetSelector();
-  else if(state.view==='pools')openPoolModal();
+  // En pools, nueva posición; en cualquier otra vista, añadir activo (el FAB inferior siempre está visible)
+  if(state.view==='pools')openPoolModal();
+  else openAssetSelector();
 }
 
 // ===================== RENDER =====================
