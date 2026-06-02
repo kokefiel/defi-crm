@@ -714,7 +714,7 @@ function renderAssetTable(assets,showOrigin){
     h+=`<td class="${pnlClass(pnl)}">${fmt(pnl)}<div class="price-sub">${fmtPct(roi)}</div></td>`;
     if(showOrigin&&a.origins){h+=`<td>${a.origins.map(o=>`<span class="wtag" style="background:${WALLETS[o.wallet].color}20;color:${WALLETS[o.wallet].color}">${WALLETS[o.wallet].name} ${o.pct}%</span>`).join(' ')}</td>`}
     if(!showOrigin&&a.id){
-      h+=`<td><div class="actions"><button class="act-btn" onclick="openPurchaseModal('${a.id}')" title="Añadir compra">+</button><button class="act-btn" onclick="openEditAsset('${a.id}')" title="Editar">✎</button><button class="act-btn del" onclick="deleteAsset('${a.id}')" title="Eliminar">✕</button></div></td>`;
+      h+=`<td><div class="actions"><button class="act-btn" onclick="openPurchaseModal('${a.id}')" title="Compra / venta">+</button><button class="act-btn" onclick="openSwapModal('${a.id}')" title="Intercambiar (swap)">⇄</button><button class="act-btn" onclick="openEditAsset('${a.id}')" title="Editar">✎</button><button class="act-btn del" onclick="deleteAsset('${a.id}')" title="Eliminar">✕</button></div></td>`;
     }else{h+=`<td></td>`}
     h+=`</tr>`;
   });
@@ -997,8 +997,10 @@ function openAssetSelector(){
   if(db.assets.length){
     h+=`<div style="margin-bottom:16px">`;
     db.assets.forEach(a=>{
-      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg3);border-radius:var(--r3);margin-bottom:8px;cursor:pointer" onclick="closeModal();openPurchaseModal('${a.id}')">`;
-      h+=`<div><strong>${a.symbol}</strong> — ${a.name||''}<div style="font-size:.78rem;color:var(--tx3)">${fmtQty(a.qty)} · PM: ${fmtPrice(a.buyPrice)} · ${WALLETS[a.wallet]?.name||a.wallet}</div></div>`;
+      const wc=WALLETS[a.wallet]?.color||'var(--tx3)';
+      const wn=WALLETS[a.wallet]?.name||a.wallet;
+      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg3);border-radius:var(--r3);margin-bottom:8px;cursor:pointer;border-left:4px solid ${wc}" onclick="closeModal();openPurchaseModal('${a.id}')">`;
+      h+=`<div><strong>${a.symbol}</strong> — ${a.name||''}<div style="font-size:.78rem;color:${wc};font-weight:600;margin-top:2px">${wn}</div></div>`;
       h+=`<span style="color:var(--acc)">+ compra</span></div>`;
     });
     h+=`</div><div class="divider"></div>`;
@@ -1025,37 +1027,131 @@ function saveNewAsset(){
 // Purchase modal
 function openPurchaseModal(assetId){
   const a=db.assets.find(x=>x.id===assetId);if(!a)return;
-  let h=`<h2>Compras — ${a.symbol}</h2>`;
+  let h=`<h2>Compra / venta — ${a.symbol}</h2>`;
   h+=`<div class="purchase-history">`;
   (a.purchases||[]).forEach(p=>{
-    h+=`<div class="purchase-item"><span>${p.date||'—'} · ${fmtQty(p.qty)} × ${fmtPrice(p.price)} = ${fmt(p.qty*p.price)}</span><button class="act-btn del" onclick="deletePurchase('${a.id}','${p.id}')">✕</button></div>`;
+    const isSell=(+p.qty||0)<0;
+    const lbl=isSell?`<span style="color:var(--red)">Venta</span>`:`Compra`;
+    h+=`<div class="purchase-item"><span>${p.date||'—'} · ${lbl} ${fmtQty(Math.abs(p.qty))} × ${fmtPrice(p.price)} = ${fmt(Math.abs(p.qty*p.price))}</span><button class="act-btn del" onclick="deletePurchase('${a.id}','${p.id}')">✕</button></div>`;
   });
   h+=`</div>`;
-  h+=`<div class="preview-box"><div class="pv-label">Precio medio actual</div><div class="pv-val">${fmtPrice(a.buyPrice)}</div></div>`;
-  h+=`<div class="divider"></div><h3 style="margin-bottom:12px;font-size:.95rem">Nueva compra</h3>`;
-  h+=`<div class="form-row3"><div class="form-group"><label>Cantidad</label><input id="pQty" type="number" step="any" oninput="previewPM('${a.id}')"></div><div class="form-group"><label>Precio</label><input id="pPrice" type="number" step="any" oninput="previewPM('${a.id}')"></div><div class="form-group"><label>Fecha</label><input id="pDate" type="date" value="${today()}"></div></div>`;
-  h+=`<div class="preview-box" id="pmPreview" style="display:none"><div class="pv-label">Nuevo precio medio</div><div class="pv-val" id="pmPreviewVal"></div></div>`;
-  h+=`<button class="btn btn-primary" onclick="savePurchase('${a.id}')" style="width:100%;margin-top:8px">Añadir compra</button>`;
+  h+=`<div class="preview-box"><div class="pv-label">Tienes ahora</div><div class="pv-val">${fmtQty(a.qty)} ${a.symbol} · PM ${fmtPrice(a.buyPrice)}</div></div>`;
+  h+=`<div class="divider"></div>`;
+  h+=`<div class="form-group"><label>Tipo de operación</label><select id="pType" onchange="onPTypeChange('${a.id}')"><option value="buy">Compra (sumar)</option><option value="sell">Venta (restar)</option></select></div>`;
+  h+=`<div class="form-row3"><div class="form-group"><label>Cantidad</label><input id="pQty" type="number" step="any" oninput="previewPM('${a.id}')"></div><div class="form-group" id="pPriceWrap"><label>Precio compra</label><input id="pPrice" type="number" step="any" oninput="previewPM('${a.id}')"></div><div class="form-group"><label>Fecha</label><input id="pDate" type="date" value="${today()}"></div></div>`;
+  h+=`<div class="preview-box" id="pmPreview" style="display:none"><div class="pv-label" id="pmPreviewLbl">Nuevo precio medio</div><div class="pv-val" id="pmPreviewVal"></div></div>`;
+  h+=`<button class="btn btn-primary" id="pSaveBtn" onclick="savePurchase('${a.id}')" style="width:100%;margin-top:8px">Añadir compra</button>`;
   openModal(h);
+}
+function onPTypeChange(aid){
+  const sell=$('#pType').value==='sell';
+  $('#pPriceWrap').style.display=sell?'none':'';
+  $('#pSaveBtn').textContent=sell?'Registrar venta':'Añadir compra';
+  previewPM(aid);
 }
 function previewPM(aid){
   const a=db.assets.find(x=>x.id===aid);if(!a)return;
-  const q=+$('#pQty').value,p=+$('#pPrice').value;
+  const sell=$('#pType')&&$('#pType').value==='sell';
+  const q=+$('#pQty').value;
+  if(sell){
+    if(q>0){
+      const rem=a.qty-q;
+      $('#pmPreview').style.display='';$('#pmPreviewLbl').textContent='Te quedarán';
+      $('#pmPreviewVal').textContent=`${fmtQty(rem)} ${a.symbol}`+(rem<0?' ⚠ saldo negativo':'');
+    }else{$('#pmPreview').style.display='none'}
+    return;
+  }
+  const p=+$('#pPrice').value;
   if(q>0&&p>0){
-    const tq=a.purchases.reduce((s,x)=>s+x.qty,0)+q;
-    const tv=a.purchases.reduce((s,x)=>s+x.qty*x.price,0)+q*p;
-    $('#pmPreview').style.display='';$('#pmPreviewVal').textContent=fmtPrice(tv/tq);
+    const tq=a.qty+q;
+    const tv=a.qty*a.buyPrice+q*p;
+    $('#pmPreview').style.display='';$('#pmPreviewLbl').textContent='Nuevo precio medio';
+    $('#pmPreviewVal').textContent=fmtPrice(tv/tq);
   }else{$('#pmPreview').style.display='none'}
 }
 function savePurchase(aid){
   const a=db.assets.find(x=>x.id===aid);if(!a)return;
-  a.purchases.push({id:uid(),qty:+$('#pQty').value||0,price:+$('#pPrice').value||0,date:$('#pDate').value||today()});
+  const sell=$('#pType')&&$('#pType').value==='sell';
+  const q=+$('#pQty').value||0;
+  const date=$('#pDate').value||today();
+  if(q<=0){alert('Introduce una cantidad mayor que 0');return}
+  if(sell){
+    // Venta: resta al PRECIO MEDIO vigente para no alterar el PM del restante
+    a.purchases.push({id:uid(),qty:-q,price:a.buyPrice,date});
+  }else{
+    a.purchases.push({id:uid(),qty:q,price:+$('#pPrice').value||0,date});
+  }
   recalcAsset(a);saveDB(db);closeModal();render();
 }
 function deletePurchase(aid,pid){
   const a=db.assets.find(x=>x.id===aid);if(!a)return;
   a.purchases=a.purchases.filter(p=>p.id!==pid);
   recalcAsset(a);saveDB(db);openPurchaseModal(aid);
+}
+
+// ===================== SWAP =====================
+function openSwapModal(assetId){
+  const from=db.assets.find(x=>x.id===assetId);if(!from)return;
+  // Activos destino: misma wallet, distinto símbolo
+  const dests=db.assets.filter(a=>a.wallet===from.wallet&&a.id!==from.id);
+  let opts=dests.map(a=>`<option value="${a.id}">${a.symbol} — ${fmtQty(a.qty)}</option>`).join('');
+  opts+=`<option value="__new__">+ Nuevo activo…</option>`;
+  let h=`<h2>Swap — vendes ${from.symbol}</h2>`;
+  h+=`<div class="preview-box"><div class="pv-label">Disponible</div><div class="pv-val">${fmtQty(from.qty)} ${from.symbol} · PM ${fmtPrice(from.buyPrice)}</div></div>`;
+  h+=`<div class="form-group"><label>Cantidad de ${from.symbol} que gastas</label><input id="swFromQty" type="number" step="any" oninput="swPreview('${from.id}')"></div>`;
+  h+=`<div class="divider"></div>`;
+  h+=`<div class="form-group"><label>Recibes en</label><select id="swDest" onchange="swDestChange()">${opts}</select></div>`;
+  h+=`<div id="swNewWrap" style="display:none"><div class="form-row"><div class="form-group"><label>Símbolo nuevo</label><input id="swNewSym"></div><div class="form-group"><label>Precio actual (USD)</label><input id="swNewPrice" type="number" step="any"></div></div></div>`;
+  h+=`<div class="form-group"><label>Cantidad que recibes</label><input id="swToQty" type="number" step="any" oninput="swPreview('${from.id}')"></div>`;
+  h+=`<div class="form-group"><label>Fecha</label><input id="swDate" type="date" value="${today()}"></div>`;
+  h+=`<div class="preview-box" id="swPrev" style="display:none"><div class="pv-label">Resumen</div><div class="pv-val" id="swPrevVal" style="font-size:.9rem;line-height:1.5"></div></div>`;
+  h+=`<div class="hint" style="margin:8px 0 12px">El coste del activo recibido = valor en USD de lo que gastas (qty × PM origen) ÷ cantidad recibida.</div>`;
+  h+=`<button class="btn btn-primary" onclick="confirmSwap('${from.id}')" style="width:100%">Confirmar swap</button>`;
+  openModal(h);
+}
+function swDestChange(){
+  $('#swNewWrap').style.display=$('#swDest').value==='__new__'?'':'none';
+}
+function swCostUsd(from,fromQty){
+  // Valor de coste de lo que sale, al PM de origen (mantiene PM del restante)
+  return fromQty*from.buyPrice;
+}
+function swPreview(fromId){
+  const from=db.assets.find(x=>x.id===fromId);if(!from)return;
+  const fq=+$('#swFromQty').value||0,tq=+$('#swToQty').value||0;
+  if(fq<=0||tq<=0){$('#swPrev').style.display='none';return}
+  const costUsd=swCostUsd(from,fq);
+  const newPM=costUsd/tq;
+  const rem=from.qty-fq;
+  $('#swPrev').style.display='';
+  $('#swPrevVal').innerHTML=`Sales: ${fmtQty(fq)} ${from.symbol} (valor ${fmt(costUsd)})<br>Quedan: ${fmtQty(rem)} ${from.symbol}${rem<0?' ⚠':''}<br>Coste del recibido: ${fmtPrice(newPM)} / ud`;
+}
+function confirmSwap(fromId){
+  const from=db.assets.find(x=>x.id===fromId);if(!from)return;
+  const fq=+$('#swFromQty').value||0,tq=+$('#swToQty').value||0;
+  const date=$('#swDate').value||today();
+  if(fq<=0||tq<=0){alert('Cantidades deben ser mayores que 0');return}
+  const destSel=$('#swDest').value;
+  const costUsd=swCostUsd(from,fq);   // valor en USD que sale
+  const newPM=costUsd/tq;             // coste unitario del activo recibido
+  // 1) Restar del origen al PM vigente (no altera PM del restante)
+  from.purchases.push({id:uid(),qty:-fq,price:from.buyPrice,date});
+  recalcAsset(from);
+  // 2) Sumar al destino
+  let dest;
+  if(destSel==='__new__'){
+    const sym=($('#swNewSym').value||'').toUpperCase();
+    const curPrice=+$('#swNewPrice').value||newPM;
+    if(!sym){alert('Indica el símbolo del nuevo activo');return}
+    dest=db.assets.find(a=>a.wallet===from.wallet&&a.symbol===sym);
+    if(!dest){dest={id:uid(),wallet:from.wallet,symbol:sym,name:sym,price:curPrice,purchases:[],qty:0,buyPrice:0};db.assets.push(dest)}
+  }else{
+    dest=db.assets.find(a=>a.id===destSel);
+    if(!dest){alert('Activo destino no encontrado');return}
+  }
+  dest.purchases.push({id:uid(),qty:tq,price:newPM,date});
+  recalcAsset(dest);
+  saveDB(db);closeModal();render();
 }
 
 // Edit asset
