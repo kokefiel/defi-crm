@@ -79,8 +79,8 @@ select option{background:var(--bg2)}
 .panel h3{font-size:.82rem;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;font-weight:600}
 
 /* DONUT */
-.donut-wrap{position:relative;width:200px;height:200px;margin:0 auto}
-.donut-wrap canvas{width:200px;height:200px}
+.donut-wrap{position:relative;width:240px;height:240px;margin:0 auto;flex-shrink:0}
+.donut-wrap canvas{width:240px;height:240px}
 .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .donut-center .dval{font-size:1.2rem;font-weight:700}
 .donut-center .dlbl{font-size:.72rem;color:var(--tx3)}
@@ -97,6 +97,42 @@ select option{background:var(--bg2)}
 .hodl-defi-summary{display:flex;gap:20px;margin-bottom:16px;font-size:.85rem}
 .hodl-defi-summary span{display:flex;align-items:center;gap:6px}
 .hodl-defi-summary .dot{width:10px;height:10px;border-radius:3px}
+.comp-panel{margin-bottom:20px}
+.panels .comp-panel{margin-bottom:0}
+.panels .donut-wrap,.panels .donut-wrap canvas{width:200px;height:200px}
+.comp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.comp-head h3{margin:0;font-size:.82rem;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.comp-toggle{display:flex;gap:3px;background:var(--bg3);border-radius:var(--r3);padding:3px}
+.ctab{padding:5px 14px;border-radius:6px;background:transparent;color:var(--tx2);font-size:.8rem;font-weight:500}
+.ctab:hover{color:var(--tx)}
+.ctab.active{background:var(--bg);color:var(--tx);box-shadow:0 2px 8px #0003}
+.comp-donut{display:flex;align-items:center;gap:32px;flex-wrap:wrap;justify-content:center}
+.comp-donut .legend{margin-top:0;flex-direction:column;gap:11px;align-items:flex-start;min-width:160px}
+.comp-donut .legend-item{font-size:.88rem}
+.comp-bars{margin-top:4px}
+.wpnl{font-size:.82rem;font-weight:600;margin-top:3px}
+.wallet-card{display:flex;justify-content:space-between;align-items:stretch;gap:16px}
+.wc-left{display:flex;flex-direction:column;min-width:0}
+.wc-right{display:flex;flex-direction:column;justify-content:center;gap:10px;width:46%;flex-shrink:0;padding:12px 16px;background:#ffffff06;border:1px solid var(--brd);border-radius:var(--r2)}
+.wc-split{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.wcs-l{font-size:.74rem;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.wcs-v{font-size:.95rem;font-weight:600;white-space:nowrap}
+.wcs-pct{font-size:.78rem;color:var(--tx3);font-weight:500}
+@media(max-width:560px){.wallet-card{flex-direction:column}.wc-right{width:100%}}
+.defi-card{margin-top:20px}
+.defi-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.defi-head h3{font-size:.95rem;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+.defi-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.dm-label{font-size:.74rem;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;font-weight:600}
+.dm-val{font-size:1.3rem;font-weight:700;letter-spacing:-.02em}
+.defi-list{display:flex;flex-direction:column;gap:8px}
+.defi-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--bg3);border-radius:var(--r3);cursor:pointer;transition:background .15s}
+.defi-row:hover{background:var(--bg4)}
+.defi-pair{font-weight:600;font-size:.95rem}
+.defi-proto{font-size:.78rem;color:var(--tx3);margin-top:1px}
+.defi-right{display:flex;align-items:center;gap:12px}
+.defi-val{font-weight:600}
+@media(max-width:560px){.defi-metrics{grid-template-columns:1fr;gap:10px}}
 
 /* TABLE */
 .tbl-wrap{overflow-x:auto}
@@ -106,6 +142,12 @@ td{padding:12px;border-bottom:1px solid var(--brd);font-size:.88rem;vertical-ali
 tr:hover{background:var(--bg4)20}
 .asset-cell{display:flex;align-items:center;gap:10px}
 .asset-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.asset-ico{width:24px;height:24px;border-radius:50%;flex-shrink:0;background:var(--bg3)}
+.na-sug-list{margin:-4px 0 14px;border:1px solid var(--brd2);border-radius:var(--r3);overflow:hidden}
+.na-sug{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.88rem;background:var(--bg2);transition:background .15s}
+.na-sug:hover{background:var(--bg4)}
+.na-sug img{width:20px;height:20px;border-radius:50%}
+.na-sug span{color:var(--tx3);font-size:.78rem;margin-left:auto}
 .asset-sym{font-weight:600}
 .asset-name{font-size:.78rem;color:var(--tx3)}
 .price-sub{font-size:.76rem;color:var(--tx3)}
@@ -246,20 +288,18 @@ tr:hover{background:var(--bg4)20}
 .nav .nav-btn,.nav .nav-sep,.nav #btnAdd{display:none}
 .nav-brand{font-weight:700;font-size:1rem;letter-spacing:.02em;color:var(--tx)}
 /* Escritorio: dock flotante centrado */
-.botnav{display:flex;position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:120;height:60px;gap:4px;padding:6px 10px;background:var(--bg2);border:1px solid var(--brd2);border-radius:18px;box-shadow:0 12px 40px #0008;backdrop-filter:blur(20px);align-items:center}
-.botnav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 18px;height:100%;background:transparent;color:var(--tx3);font-size:.84rem;font-weight:600;letter-spacing:.01em;border-radius:12px}
-.botnav-btn:hover{color:var(--tx)}
-.botnav-btn .bn-ic{font-size:1.2rem;line-height:1;opacity:.75}
+.botnav{display:flex;position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:120;height:72px;gap:6px;padding:8px 14px;background:var(--bg2);border:1px solid var(--brd2);border-radius:24px;box-shadow:0 12px 40px #0008;backdrop-filter:blur(20px);align-items:center}
+.botnav-btn{display:flex;align-items:center;justify-content:center;text-align:center;min-width:104px;padding:0 22px;height:100%;background:transparent;color:var(--tx3);font-size:.95rem;font-weight:600;letter-spacing:.01em;border-radius:16px}
+.botnav-btn:hover{color:var(--tx);background:var(--bg4)}
 .botnav-btn.active{color:var(--acc)}
-.botnav-btn.active .bn-ic{opacity:1}
-.botnav-fab{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:1.6rem;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px #4f8cff66;transform:translateY(-6px)}
+.botnav-fab{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:1.9rem;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px #4f8cff66;transform:translateY(-8px)}
 .botnav-fab:hover{filter:brightness(1.12)}
-.botnav-fab:active{transform:translateY(-6px) scale(.94)}
-.main{padding-bottom:104px}
+.botnav-fab:active{transform:translateY(-8px) scale(.94)}
+.main{padding-bottom:120px}
 /* Móvil: barra completa pegada abajo */
 @media(max-width:768px){
 .botnav{left:0;right:0;transform:none;bottom:0;height:62px;gap:0;padding:0 2px env(safe-area-inset-bottom,0);border:none;border-top:1px solid var(--brd2);border-radius:0;box-shadow:0 -4px 20px #0006;justify-content:space-around}
-.botnav-btn{flex:1;padding:0;font-size:.74rem}
+.botnav-btn{flex:1;min-width:0;padding:0;font-size:.74rem;border-radius:0}
 .botnav-fab{transform:translateY(-8px)}
 .nav-brand{font-size:.92rem}
 }
@@ -300,6 +340,7 @@ tr:hover{background:var(--bg4)20}
   <button class="nav-btn" data-view="summary" onclick="go('summary')">Resumen</button>
   <div class="nav-right">
     <button class="btn-add" id="btnAdd" onclick="onAdd()">+ Activo</button>
+    <button class="nav-icon" id="privBtn" onclick="togglePrivacy()" title="Ocultar importes">👁</button>
     <button class="nav-icon" onclick="syncPrices(true)" title="Actualizar precios">↻</button>
     <button class="nav-icon" onclick="authLogout()" title="Cerrar sesión">⎋</button>
     <span id="syncInfo"></span>
@@ -429,16 +470,22 @@ function refreshWallets(){
 refreshWallets();
 
 // ===================== STATE =====================
-let state={view:'portfolio',subTab:'all',selWallet:'wallet1',poolFilter:'all',detailId:null};
+let state={view:'portfolio',subTab:'my',selWallet:'wallet1',poolFilter:'all',detailId:null,compView:localStorage.getItem('crmcrypto_compView')||'donut'};
 const COLORS=['#4f8cff','#22c55e','#f97316','#a855f7','#ec4899','#06b6d4','#eab308','#ef4444','#8b5cf6','#14b8a6','#f43f5e','#6366f1','#84cc16','#0ea5e9'];
 const CG_MAP={BTC:'bitcoin',ETH:'ethereum',SOL:'solana',BNB:'binancecoin',USDC:'usd-coin',USDT:'tether',MATIC:'matic-network',AVAX:'avalanche-2',ARB:'arbitrum',OP:'optimism',WBTC:'wrapped-bitcoin',WETH:'weth',HYPE:'hyperliquid',XRP:'ripple',SUI:'sui',LINK:'chainlink',UNI:'uniswap',AAVE:'aave',CRV:'curve-dao-token',DOGE:'dogecoin',ADA:'cardano',DOT:'polkadot',ATOM:'cosmos',FTM:'fantom',NEAR:'near',APT:'aptos',SEI:'sei-network',TIA:'celestia',JUP:'jupiter-exchange-solana',WIF:'dogwifcoin',PEPE:'pepe',RENDER:'render-token',FET:'artificial-superintelligence-alliance',TAO:'bittensor',INJ:'injective-protocol',TRX:'tron',TON:'the-open-network',SHIB:'shiba-inu',LTC:'litecoin',BCH:'bitcoin-cash',STX:'blockstack',MKR:'maker',PENDLE:'pendle',ENA:'ethena',W:'wormhole',STRK:'starknet',EIGEN:'eigenlayer',CBBTC:'coinbase-wrapped-btc',CBETH:'coinbase-wrapped-staked-eth',AERO:'aerodrome-finance',VIRTUAL:'virtual-protocol',AI16Z:'ai16z',BERA:'berachain',KAITO:'kaito',CAKE:'pancakeswap-token',XLM:'stellar',ALGO:'algorand'};
 
 // ===================== UTILS =====================
 const $=s=>document.querySelector(s);
-const fmt=n=>{if(n==null||isNaN(n))return'$0.00';let a=Math.abs(n);if(a>=1e6)return(n<0?'-':'')+'$'+(a/1e6).toFixed(2)+'M';if(a>=1e3)return(n<0?'-':'')+'$'+a.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});return(n<0?'-':'')+'$'+a.toFixed(2)};
+// Escapa texto del usuario antes de meterlo en innerHTML (evita XSS). Vale para texto y para atributos entre comillas.
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Modo privacidad: oculta importes y cantidades (los precios de mercado son públicos y se ven siempre)
+let privacy=localStorage.getItem('crmcrypto_privacy')==='1';
+function togglePrivacy(){privacy=!privacy;localStorage.setItem('crmcrypto_privacy',privacy?'1':'0');syncPrivBtn();render()}
+function syncPrivBtn(){const b=$('#privBtn');if(b){b.textContent=privacy?'🙈':'👁';b.title=privacy?'Mostrar importes':'Ocultar importes'}}
+const fmt=n=>{if(privacy)return'$•••••';if(n==null||isNaN(n))return'$0.00';let a=Math.abs(n);if(a>=1e6)return(n<0?'-':'')+'$'+(a/1e6).toFixed(2)+'M';if(a>=1e3)return(n<0?'-':'')+'$'+a.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});return(n<0?'-':'')+'$'+a.toFixed(2)};
 const fmtP=n=>{if(n==null||isNaN(n))return'0.00';return n.toFixed(2)};
 const fmtPct=n=>(n>=0?'+':'')+fmtP(n)+'%';
-const fmtQty=n=>{if(n==null)return'0';if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return n.toLocaleString('en',{maximumFractionDigits:4});if(n>=1)return n.toFixed(4);return n.toFixed(6)};
+const fmtQty=n=>{if(privacy)return'•••';if(n==null)return'0';if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return n.toLocaleString('en',{maximumFractionDigits:4});if(n>=1)return n.toFixed(4);return n.toFixed(6)};
 const fmtPrice=n=>{if(n>=100)return'$'+n.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});if(n>=1)return'$'+n.toFixed(4);return'$'+n.toFixed(6)};
 const pnlClass=n=>n>=0?'pnl-pos':'pnl-neg';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -463,6 +510,8 @@ function migrate(opts){
     (p.rewards||[]).forEach(r=>{if(r.id!=null)r.id=String(r.id)});
     p.version='v3';
     if(!p.rangeAlertPct)p.rangeAlertPct=5;
+    if(p.rangeAlertLow==null)p.rangeAlertLow=+p.rangeAlertPct||5;
+    if(p.rangeAlertHigh==null)p.rangeAlertHigh=+p.rangeAlertPct||5;
     if(p.curTaQty==null)p.curTaQty=p.taQty||0;
     if(p.curTbQty==null)p.curTbQty=p.tbQty||0;
     if(!p.rewards)p.rewards=[];
@@ -487,26 +536,50 @@ function recalcAsset(a){
 // onLoggedIn/init con el DB correcto, evitando subir datos a la nube antes de tiempo.
 
 // ===================== COINGECKO =====================
+const cgMiss=new Set(); // símbolos ya buscados sin resultado en esta sesión (evita repetir llamadas)
+async function cgResolve(sym){
+  const s=(sym||'').toUpperCase();
+  if(CG_MAP[s])return CG_MAP[s];
+  if(cgMiss.has(s)||!s)return null;
+  try{
+    const r=await fetch('https://api.coingecko.com/api/v3/search?query='+encodeURIComponent(s));
+    const d=await r.json();
+    const hit=(d.coins||[]).find(c=>(c.symbol||'').toUpperCase()===s);
+    if(hit)return hit.id;
+  }catch(e){}
+  cgMiss.add(s);
+  return null;
+}
 async function syncPrices(force){
   const now=Date.now();
   if(!force&&db.lastSync&&now-db.lastSync<600000)return;
+  // Vincula cada activo a su id de CoinGecko (mapa conocido o búsqueda, una vez por símbolo)
+  for(const a of db.assets){
+    if(!a.cgId){const id=await cgResolve(a.symbol);if(id)a.cgId=id}
+  }
   const ids=new Set();
-  db.assets.forEach(a=>{const cg=CG_MAP[a.symbol.toUpperCase()];if(cg)ids.add(cg)});
+  db.assets.forEach(a=>{if(a.cgId)ids.add(a.cgId)});
   db.positions.forEach(p=>{
     [p.taSymbol,p.tbSymbol].forEach(sym=>{const cg=CG_MAP[(sym||'').toUpperCase()];if(cg)ids.add(cg)});
   });
   if(!ids.size)return;
   try{
-    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+[...ids].join(',')+'&vs_currencies=usd');
-    const d=await r.json();
+    const r=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=250&ids='+[...ids].join(',')+'&price_change_percentage=24h,7d');
+    const arr=await r.json();
+    const d={};(Array.isArray(arr)?arr:[]).forEach(c=>d[c.id]=c);
     db.assets.forEach(a=>{
-      const cg=CG_MAP[a.symbol.toUpperCase()];
-      if(cg&&d[cg]&&d[cg].usd)a.price=d[cg].usd;
+      const c=d[a.cgId];
+      if(c){
+        if(c.current_price!=null)a.price=c.current_price;
+        if(c.image)a.img=c.image;
+        a.chg24=c.price_change_percentage_24h;
+        a.chg7d=c.price_change_percentage_7d_in_currency;
+      }
     });
     db.positions.forEach(p=>{
       const taCg=CG_MAP[(p.taSymbol||'').toUpperCase()],tbCg=CG_MAP[(p.tbSymbol||'').toUpperCase()];
-      if(taCg&&d[taCg]&&d[taCg].usd)p.taCurPrice=d[taCg].usd;
-      if(tbCg&&d[tbCg]&&d[tbCg].usd)p.tbCurPrice=d[tbCg].usd;
+      if(taCg&&d[taCg]&&d[taCg].current_price!=null)p.taCurPrice=d[taCg].current_price;
+      if(tbCg&&d[tbCg]&&d[tbCg].current_price!=null)p.tbCurPrice=d[tbCg].current_price;
       refreshPoolValue(p);
     });
     captureSnapshot();
@@ -558,6 +631,33 @@ function assetPnl(a){return a.qty*(a.price-a.buyPrice)}
 function walletHodl(wid){return getWalletAssets(wid).reduce((s,a)=>s+assetVal(a),0)}
 function walletDefi(wid){return db.positions.filter(p=>p.wallet===wid&&p.status==='active').reduce((s,p)=>s+poolCurrentVal(p),0)}
 function walletRewards(wid){return db.positions.filter(p=>p.wallet===wid).reduce((s,p)=>s+poolIncome(p),0)}
+// Coste invertido conocido de la wallet (HODL con precio de compra + capital DeFi activo). Ignora activos sin coste.
+function walletCost(wid){
+  const hc=getWalletAssets(wid).reduce((s,a)=>s+(a.buyPrice>0?a.qty*a.buyPrice:0),0);
+  const dc=db.positions.filter(p=>p.wallet===wid&&p.status==='active').reduce((s,p)=>s+poolCap(p),0);
+  return hc+dc;
+}
+// Rendimiento total de la wallet (solo activos con coste conocido + P&L de las pools).
+function walletPnl(wid){
+  const hp=getWalletAssets(wid).reduce((s,a)=>s+(a.buyPrice>0?(a.price-a.buyPrice)*a.qty:0),0);
+  const dp=db.positions.filter(p=>p.wallet===wid).reduce((s,p)=>s+poolPnl(p),0);
+  return hp+dp;
+}
+// HTML del rendimiento para la tarjeta de wallet (color + %, o "—" si no hay coste).
+function walletPnlHtml(wid){
+  const p=walletPnl(wid),c=walletCost(wid);
+  if(!(c>0))return `<div class="wpnl" style="color:var(--tx3)">Rendimiento: —</div>`;
+  return `<div class="wpnl ${pnlClass(p)}">${fmt(p)} (${fmtPct(p/c*100)})</div>`;
+}
+// Recuadro derecho de la tarjeta de wallet: reparto HODL vs DeFi de esa wallet.
+function walletSplitHtml(wid){
+  const hodl=walletHodl(wid),defi=walletDefi(wid),total=hodl+defi;
+  const hPct=total?hodl/total*100:0,dPct=total?defi/total*100:0;
+  return `<div class="wc-right">`+
+    `<div class="wc-split"><span class="wcs-l">HODL</span><span class="wcs-v">${fmt(hodl)} <span class="wcs-pct">${fmtP(hPct)}%</span></span></div>`+
+    `<div class="wc-split"><span class="wcs-l">DeFi</span><span class="wcs-v">${fmt(defi)} <span class="wcs-pct">${fmtP(dPct)}%</span></span></div>`+
+  `</div>`;
+}
 function poolCap(p){return(p.taQty*p.taPrice)+(p.tbQty*p.tbPrice)}
 function rewTotal(p){return(p.rewards||[]).reduce((s,r)=>s+(r.state==='reinvertido'?0:(+r.usd||0)),0)}
 function reinvestedRewards(p){return(p.rewards||[]).reduce((s,r)=>s+(r.state==='reinvertido'?(+r.usd||0):0),0)}
@@ -580,29 +680,41 @@ function poolCurrentVal(p){
   return val>0?val:(+p.curVal||0);
 }
 function refreshPoolValue(p){p.curVal=poolCurrentVal(p)}
+// ¿El token tiene cotización en vivo? (stable, en CoinGecko, o ya con precio en assets)
+function tokenHasFeed(sym){
+  const s=(sym||'').toUpperCase();
+  return ['USDC','USDT','DAI','USDS','PYUSD','EURC'].includes(s)||!!CG_MAP[s]||db.assets.some(x=>(x.symbol||'').toUpperCase()===s&&+x.price>0);
+}
 function v3CurrentPrice(p){
-  const direct=+p.curPriceAB||0;if(direct>0)return direct;
-  const ta=poolTokenPrice(p,'a'),tb=poolTokenPrice(p,'b');
-  return tb>0?ta/tb:0;
+  // Si ambos tokens cotizan en vivo, usamos el precio REAL de mercado → la barra se mueve sola.
+  if(tokenHasFeed(p.taSymbol)&&tokenHasFeed(p.tbSymbol)){
+    const ta=poolTokenPrice(p,'a'),tb=poolTokenPrice(p,'b');
+    if(ta>0&&tb>0)return ta/tb;
+  }
+  // Respaldo para tokens sin cotización: el precio manual que introdujo el usuario.
+  return +p.curPriceAB||0;
 }
 function v3RangeInfo(p){
   const price=v3CurrentPrice(p),a=+p.rangeMin||0,b=+p.rangeMax||0;
   if(!price||!a||!b)return{ready:false,status:'unknown',label:'Sin rango',price};
-  const min=Math.min(a,b),max=Math.max(a,b),alert=+p.rangeAlertPct||5;
+  const min=Math.min(a,b),max=Math.max(a,b);
+  const alertLow=+p.rangeAlertLow||+p.rangeAlertPct||5,alertHigh=+p.rangeAlertHigh||+p.rangeAlertPct||5;
   if(max<=min)return{ready:false,status:'unknown',label:'Rango inválido',price,min,max};
   const pos=Math.max(0,Math.min(100,((price-min)/(max-min))*100));
   const width=((max-min)/((min+max)/2))*100;
   if(price<min){
     const d=((min-price)/price)*100;
-    return{ready:true,status:'out',label:'Fuera por abajo',price,min,max,pos:0,distance:d,width,alert};
+    return{ready:true,status:'out',label:'Fuera por abajo',price,min,max,pos:0,distance:d,width,alert:alertLow};
   }
   if(price>max){
     const d=((price-max)/price)*100;
-    return{ready:true,status:'out',label:'Fuera por arriba',price,min,max,pos:100,distance:d,width,alert};
+    return{ready:true,status:'out',label:'Fuera por arriba',price,min,max,pos:100,distance:d,width,alert:alertHigh};
   }
-  const d=Math.min((price-min)/price,(max-price)/price)*100;
-  const near=d<=alert;
-  return{ready:true,status:near?'near':'in',label:near?'Cerca del borde':'En rango',price,min,max,pos,distance:d,width,alert};
+  const dLow=(price-min)/price*100,dHigh=(max-price)/price*100;
+  const nearestLow=dLow<=dHigh;
+  const distance=nearestLow?dLow:dHigh,alert=nearestLow?alertLow:alertHigh;
+  const near=(dLow<=alertLow)||(dHigh<=alertHigh);
+  return{ready:true,status:near?'near':'in',label:near?'Cerca del borde':'En rango',price,min,max,pos,distance,width,alert};
 }
 function v3FeeApr(p){
   const cap=poolCap(p),fees=poolIncome(p),d=poolDays(p);
@@ -645,7 +757,6 @@ function poolPnl(p){
 }
 function poolRoi(p){const c=poolCap(p);return c?poolPnl(p)/c*100:0}
 function poolDays(p){return daysBetween(p.dateIn,p.dateOut||today())}
-function poolApy(p){const d=poolDays(p),r=poolRoi(p)/100;if(d<1)return 0;return((Math.pow(1+r,365/d))-1)*100}
 function poolExitVal(p){return(p.exitTaQty||0)*(p.exitTaPrice||0)+(p.exitTbQty||0)*(p.exitTbPrice||0)}
 
 function renderPortfolio(app){
@@ -653,8 +764,8 @@ function renderPortfolio(app){
   const isMy=state.subTab==='my';
   let h=`<div class="fade-in">`;
   h+=`<div class="tabs-bar"><div class="tabs">`;
-  h+=`<button class="tab ${isAll?'active':''}" onclick="state.subTab='all';render()">Todas las wallets</button>`;
   h+=`<button class="tab ${isMy?'active':''}" onclick="state.subTab='my';render()">Mi portfolio</button>`;
+  h+=`<button class="tab ${isAll?'active':''}" onclick="state.subTab='all';render()">Wallets</button>`;
   h+=`</div><div class="bar-actions">`;
   h+=`<button class="btn btn-secondary" onclick="exportDB()">Exportar</button>`;
   h+=`<button class="btn btn-secondary" onclick="$('#fileInput').click()">Importar</button>`;
@@ -672,15 +783,16 @@ function renderAllWallets(){
   const w1t=walletHodl('wallet1')+walletDefi('wallet1');
   const w2t=walletHodl('wallet2')+walletDefi('wallet2');
   let h=`<div class="wallet-sel">`;
-  h+=`<div class="wallet-card ${w==='wallet1'?'sel':''}" onclick="state.selWallet='wallet1';render()"><div class="wname">${WALLETS.wallet1.name}</div><div class="wtype">${WALLETS.wallet1.type}</div><div class="wval">${fmt(w1t)}</div></div>`;
-  h+=`<div class="wallet-card ${w==='wallet2'?'sel w2':''}" onclick="state.selWallet='wallet2';render()"><div class="wname">${WALLETS.wallet2.name}</div><div class="wtype">${WALLETS.wallet2.type}</div><div class="wval">${fmt(w2t)}</div></div>`;
+  h+=`<div class="wallet-card ${w==='wallet1'?'sel':''}" onclick="state.selWallet='wallet1';render()"><div class="wc-left"><div class="wname">${esc(WALLETS.wallet1.name)}</div><div class="wtype">${WALLETS.wallet1.type}</div><div class="wval">${fmt(w1t)}</div>${walletPnlHtml('wallet1')}</div>${walletSplitHtml('wallet1')}</div>`;
+  h+=`<div class="wallet-card ${w==='wallet2'?'sel w2':''}" onclick="state.selWallet='wallet2';render()"><div class="wc-left"><div class="wname">${esc(WALLETS.wallet2.name)}</div><div class="wtype">${WALLETS.wallet2.type}</div><div class="wval">${fmt(w2t)}</div>${walletPnlHtml('wallet2')}</div>${walletSplitHtml('wallet2')}</div>`;
   h+=`</div>`;
-  const assets=getWalletAssets(w);
+  const assets=getWalletAssets(w).slice().sort((a,b)=>(b.qty*b.price)-(a.qty*a.price));
   const hodl=assets.reduce((s,a)=>s+assetVal(a),0);
   const defi=walletDefi(w);
   const total=hodl+defi;
   h+=renderPanels(assets,total,hodl,defi,'chart_all');
   h+=renderAssetTable(assets,false);
+  h+=renderDefiSection(w);
   return h;
 }
 
@@ -690,64 +802,133 @@ function renderMyPortfolio(){
   db.assets.forEach(a=>{
     const mult=a.wallet==='wallet1'?1:0.5;
     const k=a.symbol;
-    if(!map[k])map[k]={symbol:a.symbol,name:a.name,price:a.price,qty:0,totalCost:0,wallet:'mixed',purchases:[],origins:[]};
+    if(!map[k])map[k]={symbol:a.symbol,name:a.name,price:a.price,img:a.img,chg24:a.chg24,chg7d:a.chg7d,qty:0,totalCost:0,wallet:'mixed',purchases:[],origins:[]};
+    if(!map[k].img&&a.img)map[k].img=a.img;
     map[k].qty+=a.qty*mult;
     map[k].totalCost+=(a.qty*a.buyPrice)*mult;
     map[k].origins.push({wallet:a.wallet,pct:mult*100});
   });
-  const assets=Object.values(map).map(a=>{a.buyPrice=a.qty>0?a.totalCost/a.qty:0;return a});
+  const assets=Object.values(map).map(a=>{a.buyPrice=a.qty>0?a.totalCost/a.qty:0;return a}).sort((a,b)=>(b.qty*b.price)-(a.qty*a.price));
   const hodl=assets.reduce((s,a)=>s+a.qty*a.price,0);
   const defiAll=db.positions.filter(p=>p.status==='active').reduce((s,p)=>{
     const m=p.wallet==='wallet1'?1:0.5;return s+poolCurrentVal(p)*m},0);
   const total=hodl+defiAll;
-  const pnlHodl=assets.reduce((s,a)=>s+(a.price-a.buyPrice)*a.qty,0);
+  const pnlHodl=assets.reduce((s,a)=>s+(a.buyPrice>0?(a.price-a.buyPrice)*a.qty:0),0);
   const pnlDefi=db.positions.reduce((s,p)=>{const m=p.wallet==='wallet1'?1:0.5;return s+poolPnl(p)*m},0);
-  let h=`<div class="metric hero" style="margin-bottom:20px;text-align:center"><div class="label">Total mi portfolio</div><div class="val" style="font-size:2.2rem">${fmt(total)}</div><div class="sub">Wallet1 (100%) + 50% Wallet2</div></div>`;
-  h+=`<div class="metrics m4">`;
-  h+=`<div class="metric"><div class="label">HODL</div><div class="val sm">${fmt(hodl)}</div></div>`;
-  h+=`<div class="metric"><div class="label">DeFi</div><div class="val sm">${fmt(defiAll)}</div></div>`;
-  h+=`<div class="metric"><div class="label">RENDIMIENTO HODL</div><div class="val sm ${pnlClass(pnlHodl)}">${fmt(pnlHodl)}</div></div>`;
-  h+=`<div class="metric"><div class="label">RENDIMIENTO DeFi</div><div class="val sm ${pnlClass(pnlDefi)}">${fmt(pnlDefi)}</div></div>`;
-  h+=`</div>`;
+  // Invertido (mi parte): coste HODL consolidado + capital DeFi activo
+  const costHodl=assets.reduce((s,a)=>s+(a.totalCost||0),0);
+  const costDefi=db.positions.filter(p=>p.status==='active').reduce((s,p)=>{const m=p.wallet==='wallet1'?1:0.5;return s+poolCap(p)*m},0);
+  const invested=costHodl+costDefi;
+  const pnlTotal=pnlHodl+pnlDefi;
+  // Cambio 24h en $ reconstruido desde la variación de cada activo (HODL con dato de CoinGecko)
+  let chg24Abs=0,prev24=0;
+  assets.forEach(a=>{if(a.chg24!=null&&!isNaN(a.chg24)){const v=a.qty*a.price,pv=v/(1+a.chg24/100);chg24Abs+=v-pv;prev24+=pv}});
+  const chg24Pct=prev24?chg24Abs/prev24*100:null;
+  // Mejor activo: hoy (24h) e histórico (vs precio medio de compra)
+  const best24=assets.filter(a=>a.chg24!=null&&!isNaN(a.chg24)&&a.qty>0).sort((a,b)=>b.chg24-a.chg24)[0];
+  const topH=assets.filter(a=>a.buyPrice>0&&a.qty>0).map(a=>({sym:a.symbol,roi:(a.price-a.buyPrice)/a.buyPrice*100})).sort((a,b)=>b.roi-a.roi)[0];
+  let h=`<div class="metrics m4">`;
+  h+=`<div class="metric hero"><div class="label">Saldo actual</div><div class="val">${fmt(total)}</div><div class="sub">HODL ${fmt(hodl)} + DeFi ${fmt(defiAll)}</div></div>`;
+  if(chg24Pct==null)h+=`<div class="metric"><div class="label">Cambio cartera 24h</div><div class="val sm" style="color:var(--tx3)">—</div><div class="sub">Pulsa ↻ para sincronizar</div></div>`;
+  else h+=`<div class="metric"><div class="label">Cambio cartera 24h</div><div class="val sm ${pnlClass(chg24Abs)}">${fmt(chg24Abs)} <span style="font-size:.82rem">${chg24Abs>=0?'▲':'▼'} ${fmtP(Math.abs(chg24Pct))}%</span></div><div class="sub">Variación 24h de tus activos HODL</div></div>`;
+  h+=`<div class="metric"><div class="label">Total ganancias/pérdidas</div><div class="val sm ${pnlClass(pnlTotal)}">${fmt(pnlTotal)} <span style="font-size:.8rem">${invested>0?fmtPct(pnlTotal/invested*100):''}</span></div><div class="sub">Invertido ${fmt(invested)} · HODL ${fmt(pnlHodl)} / DeFi ${fmt(pnlDefi)}</div></div>`;
+  h+=`<div class="metric" style="border-color:#eab30840;background:linear-gradient(135deg,#eab30810,#eab30803)"><div class="label">Mejor rendimiento</div>`;
+  if(best24){
+    const ico=best24.img?`<img class="asset-ico" src="${esc(best24.img)}" alt="" style="width:18px;height:18px;vertical-align:-3px;margin-right:4px">`:'';
+    h+=`<div class="val sm">${ico}${esc(best24.symbol)} <span class="${pnlClass(best24.chg24)}">${fmtPct(best24.chg24)}</span> <span style="font-size:.72rem;color:var(--tx3)">24h</span></div>`;
+  }else h+=`<div class="val sm" style="color:var(--tx3)">—</div>`;
+  if(topH)h+=`<div class="sub">🏆 Histórico: ${esc(topH.sym)} ${fmtPct(topH.roi)} desde compra</div>`;
+  h+=`</div></div>`;
+  // Quesito + gráfica lado a lado (como CoinGecko)
+  h+=`<div class="panels">`;
   h+=renderPanels(assets,total,hodl,defiAll,'chart_my');
+  h+=renderMiniEvo();
+  h+=`</div>`;
   h+=renderAssetTable(assets,true);
   return h;
 }
 
-function renderPanels(assets,total,hodl,defi,chartId){
-  let h=`<div class="panels">`;
-  h+=`<div class="panel"><h3>Composición</h3><div class="donut-wrap"><canvas id="${chartId}" width="400" height="400"></canvas><div class="donut-center"><div class="dval">${fmt(total)}</div><div class="dlbl">Total</div></div></div>`;
-  h+=`<div class="legend" id="leg_${chartId}">`;
-  assets.forEach((a,i)=>{
-    const v=a.qty*a.price;const pct=total?((v/total)*100).toFixed(1):0;
-    h+=`<div class="legend-item"><div class="legend-dot" style="background:${COLORS[i%COLORS.length]}"></div>${a.symbol} ${pct}%</div>`;
-  });
+// Mini gráfica de evolución para colocar junto al donut en Mi portfolio
+function renderMiniEvo(){
+  const range=state.evoRange||'all';
+  let h=`<div class="panel"><div class="comp-head"><h3>Rendimiento total</h3><div class="comp-toggle">`;
+  [['1m','1m'],['3m','3m'],['1y','1a'],['all','Todo']].forEach(([k,lbl])=>{h+=`<button class="ctab ${range===k?'active':''}" onclick="state.evoRange='${k}';render()">${lbl}</button>`});
   h+=`</div></div>`;
-  // Bars
-  h+=`<div class="panel"><h3>HODL vs DeFi</h3>`;
-  const hPct=total?(hodl/total*100):0;const dPct=total?(defi/total*100):0;
-  h+=`<div class="hodl-defi-summary"><span><div class="dot" style="background:var(--acc)"></div>HODL: ${fmt(hodl)} (${fmtP(hPct)}%)</span><span><div class="dot" style="background:var(--grn)"></div>DeFi: ${fmt(defi)} (${fmtP(dPct)}%)</span></div>`;
-  assets.forEach((a,i)=>{
-    const v=a.qty*a.price;const c=COLORS[i%COLORS.length];
-    const hW=total?(v/total*100):0;
-    h+=`<div class="bar-row"><div class="bar-label"><span>${a.symbol}</span><span>${fmt(v)}</span></div>`;
-    h+=`<div class="bar-track"><div class="bar-fill" style="width:${hW}%;background:${c}90"></div></div>`;
-    h+=`<div class="bar-sub"><span>HODL: ${fmt(v)}</span></div></div>`;
+  h+=`<canvas id="miniEvo" style="width:100%;height:230px;display:block"></canvas>`;
+  h+=`<div class="hint" style="margin-top:8px">Verde: valor de mercado (un punto por sincronización ↻) · Gris: dinero invertido. Vista global, todas las wallets al 100%. Detalle en la pestaña Evolución.</div>`;
+  h+=`</div>`;
+  return h;
+}
+function setCompView(v){state.compView=v;localStorage.setItem('crmcrypto_compView',v);render()}
+function renderPanels(assets,total,hodl,defi,chartId){
+  const isDonut=state.compView!=='bars';
+  let h=`<div class="panel comp-panel">`;
+  h+=`<div class="comp-head"><h3>Composición</h3><div class="comp-toggle">`;
+  h+=`<button class="ctab ${isDonut?'active':''}" onclick="setCompView('donut')">◔ Círculo</button>`;
+  h+=`<button class="ctab ${!isDonut?'active':''}" onclick="setCompView('bars')">▭ Barras</button></div></div>`;
+  if(isDonut){
+    h+=`<div class="comp-donut"><div class="donut-wrap"><canvas id="${chartId}" width="400" height="400"></canvas><div class="donut-center"><div class="dval">${fmt(hodl)}</div><div class="dlbl">${defi>0?'HODL':'Total'}</div></div></div>`;
+    h+=`<div class="legend" id="leg_${chartId}">`;
+    assets.forEach((a,i)=>{
+      const v=a.qty*a.price;const pct=hodl?((v/hodl)*100).toFixed(1):0;
+      h+=`<div class="legend-item"><div class="legend-dot" style="background:${COLORS[i%COLORS.length]}"></div>${esc(a.symbol)} ${pct}%</div>`;
+    });
+    h+=`</div></div>`;
+  }else{
+    h+=`<div class="comp-bars">`;
+    assets.forEach((a,i)=>{
+      const v=a.qty*a.price;const c=COLORS[i%COLORS.length];const pct=hodl?(v/hodl*100):0;
+      h+=`<div class="bar-row"><div class="bar-label"><span>${esc(a.symbol)}</span><span>${fmt(v)} · ${fmtP(pct)}%</span></div>`;
+      h+=`<div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${c}90"></div></div></div>`;
+    });
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+
+// Foto del DeFi de una wallet: resumen + lista compacta de posiciones activas (clic = zoom en Pools)
+function renderDefiSection(wid){
+  const active=db.positions.filter(p=>p.wallet===wid&&p.status==='active');
+  if(!active.length)return'';
+  const cap=active.reduce((s,p)=>s+poolCurrentVal(p),0);
+  const rew=walletRewards(wid);
+  let h=`<div class="card defi-card">`;
+  h+=`<div class="defi-head"><h3>🌊 DeFi en esta wallet</h3><button class="btn btn-secondary" onclick="go('pools',{poolFilter:'${wid}'})">Ver en Pools →</button></div>`;
+  h+=`<div class="defi-metrics">`;
+  h+=`<div><div class="dm-label">Capital trabajando</div><div class="dm-val">${fmt(cap)}</div></div>`;
+  h+=`<div><div class="dm-label">Rewards / fees</div><div class="dm-val ${rew>0?'pnl-pos':''}">${fmt(rew)}</div></div>`;
+  h+=`<div><div class="dm-label">Posiciones activas</div><div class="dm-val">${active.length}</div></div>`;
+  h+=`</div>`;
+  h+=`<div class="defi-list">`;
+  active.forEach(p=>{
+    h+=`<div class="defi-row" onclick="go('detail',{detailId:'${p.id}'})">`;
+    h+=`<div class="defi-info"><div class="defi-pair">${esc(p.taSymbol)}/${esc(p.tbSymbol)}</div><div class="defi-proto">${esc(p.protocol||'')}${p.network?' · '+esc(p.network):''}</div></div>`;
+    h+=`<div class="defi-right">${v3StatusBadge(p)}<div class="defi-val">${fmt(poolCurrentVal(p))}</div></div>`;
+    h+=`</div>`;
   });
   h+=`</div></div>`;
   return h;
 }
-
+function chgCell(v){
+  if(v==null||isNaN(v))return`<td style="color:var(--tx3)">—</td>`;
+  return`<td class="${pnlClass(v)}">${fmtPct(v)}</td>`;
+}
 function renderAssetTable(assets,showOrigin){
   if(!assets.length)return`<div class="empty"><div class="e-icon">📂</div><div class="e-title">Sin activos</div><div>Pulsa "+ Activo" para empezar</div></div>`;
-  let h=`<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Activo</th><th>Cantidad</th><th>Precio</th><th>RENDIMIENTO HODL</th>${showOrigin?'<th>Origen</th>':''}<th>Acciones</th></tr></thead><tbody>`;
+  let h=`<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Activo</th><th>Cantidad</th><th>Precio</th><th>Valor</th><th>24h</th><th>7d</th><th>RENDIMIENTO HODL</th>${showOrigin?'<th>Origen</th>':''}<th>Acciones</th></tr></thead><tbody>`;
   assets.forEach((a,i)=>{
-    const v=assetVal(a);const pnl=(a.price-a.buyPrice)*a.qty;const roi=a.buyPrice?(pnl/(a.qty*a.buyPrice)*100):0;
-    h+=`<tr><td><div class="asset-cell"><div class="asset-dot" style="background:${COLORS[i%COLORS.length]}"></div><div><div class="asset-sym">${a.symbol}</div><div class="asset-name">${a.name||''}</div></div></div></td>`;
-    h+=`<td>${fmtQty(a.qty)}<div class="price-sub">${fmt(v)}</div></td>`;
-    h+=`<td>${fmtPrice(a.price)}<div class="price-sub">Precio medio: ${fmtPrice(a.buyPrice)}</div></td>`;
-    h+=`<td class="${pnlClass(pnl)}">${fmt(pnl)}<div class="price-sub">${fmtPct(roi)}</div></td>`;
-    if(showOrigin&&a.origins){h+=`<td>${a.origins.map(o=>`<span class="wtag" style="background:${WALLETS[o.wallet].color}20;color:${WALLETS[o.wallet].color}">${WALLETS[o.wallet].name} ${o.pct}%</span>`).join(' ')}</td>`}
+    const v=assetVal(a);const cost=a.qty*a.buyPrice;const pnl=(a.price-a.buyPrice)*a.qty;const roi=cost?(pnl/cost*100):0;
+    const hasCost=a.buyPrice>0&&a.qty>0;
+    const ico=a.img?`<img class="asset-ico" src="${esc(a.img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<div class="asset-dot" style="background:${COLORS[i%COLORS.length]}"></div>`;
+    h+=`<tr><td><div class="asset-cell">${ico}<div><div class="asset-sym">${esc(a.symbol)}</div><div class="asset-name">${esc(a.name||'')}</div></div></div></td>`;
+    h+=`<td>${fmtQty(a.qty)}</td>`;
+    h+=`<td>${fmtPrice(a.price)}<div class="price-sub">Precio medio: ${hasCost?fmtPrice(a.buyPrice):'—'}</div></td>`;
+    h+=`<td style="font-weight:600">${fmt(v)}</td>`;
+    h+=chgCell(a.chg24)+chgCell(a.chg7d);
+    if(hasCost)h+=`<td class="${pnlClass(pnl)}">${fmt(pnl)}<div class="price-sub">${fmtPct(roi)}</div></td>`;
+    else h+=`<td style="color:var(--tx3)">—<div class="price-sub">Sin coste registrado</div></td>`;
+    if(showOrigin&&a.origins){h+=`<td>${a.origins.map(o=>`<span class="wtag" style="background:${WALLETS[o.wallet].color}20;color:${WALLETS[o.wallet].color}">${esc(WALLETS[o.wallet].name)} ${o.pct}%</span>`).join(' ')}</td>`}
     if(!showOrigin&&a.id){
       h+=`<td><div class="actions"><button class="act-btn" onclick="openPurchaseModal('${a.id}')" title="Compra / venta">+</button><button class="act-btn" onclick="openSwapModal('${a.id}')" title="Intercambiar (swap)">⇄</button><button class="act-btn" onclick="openEditAsset('${a.id}')" title="Editar">✎</button><button class="act-btn del" onclick="deleteAsset('${a.id}')" title="Eliminar">✕</button></div></td>`;
     }else{h+=`<td></td>`}
@@ -758,11 +939,14 @@ function renderAssetTable(assets,showOrigin){
 }
 
 function drawAllCharts(){
+  if(state.subTab==='my'&&document.getElementById('miniEvo')){
+    drawEvoChart(buildCostSeries(),buildValueSeries(),state.evoRange||'all','miniEvo');
+  }
   const ids=state.subTab==='all'?['chart_all']:['chart_my'];
   ids.forEach(id=>{
     const c=document.getElementById(id);if(!c)return;
     const ctx=c.getContext('2d');
-    const assets=state.subTab==='all'?getWalletAssets(state.selWallet):getConsolidatedAssets();
+    const assets=(state.subTab==='all'?getWalletAssets(state.selWallet):getConsolidatedAssets()).slice().sort((a,b)=>(b.qty*b.price)-(a.qty*a.price));
     const total=assets.reduce((s,a)=>s+a.qty*a.price,0);
     drawDonut(ctx,assets.map((a,i)=>({val:a.qty*a.price,color:COLORS[i%COLORS.length]})),total,200);
   });
@@ -775,13 +959,20 @@ function getConsolidatedAssets(){
 function drawDonut(ctx,data,total,size){
   ctx.clearRect(0,0,size*2,size*2);
   if(!data.length||!total)return;
-  const cx=size,cy=size,r=size*0.78,w=size*0.22;
+  const cx=size,cy=size,r=size*0.82,w=size*0.20;
+  const segs=data.filter(d=>d.val>0).length;
+  const gap=segs>1?0.05:0; // hueco angular entre activos (rad)
   let startAngle=-Math.PI/2;
   data.forEach(d=>{
     const sweep=(d.val/total)*Math.PI*2;
-    ctx.beginPath();ctx.arc(cx,cy,r,startAngle,startAngle+sweep);
-    ctx.arc(cx,cy,r-w,startAngle+sweep,startAngle,true);
-    ctx.closePath();ctx.fillStyle=d.color;ctx.fill();
+    if(d.val>0){
+      const a0=startAngle+gap/2,a1=startAngle+sweep-gap/2;
+      if(a1>a0){
+        ctx.beginPath();ctx.arc(cx,cy,r,a0,a1);
+        ctx.arc(cx,cy,r-w,a1,a0,true);
+        ctx.closePath();ctx.fillStyle=d.color;ctx.fill();
+      }
+    }
     startAngle+=sweep;
   });
 }
@@ -794,7 +985,7 @@ function renderPools(app){
   let h=`<div class="fade-in"><div class="pool-filters">`;
   h+=`<button class="pill ${f==='all'?'active':''}" onclick="state.poolFilter='all';render()">Todas (${cnt('all')})</button>`;
   ['wallet1','wallet2'].forEach(w=>{
-    h+=`<button class="pill ${f===w?'active':''}" onclick="state.poolFilter='${w}';render()">${WALLETS[w].name} (${cnt(w)})</button>`;
+    h+=`<button class="pill ${f===w?'active':''}" onclick="state.poolFilter='${w}';render()">${esc(WALLETS[w].name)} (${cnt(w)})</button>`;
   });
   h+=`</div>`;
   const activeV3=pools.filter(p=>p.status==='active');
@@ -814,20 +1005,20 @@ function renderPools(app){
   else{
     h+=`<div class="pool-list">`;
     pools.forEach(p=>{
-      const cap=poolCap(p),pnl=poolPnl(p),roi=poolRoi(p),apy=poolApy(p);
+      const cap=poolCap(p),pnl=poolPnl(p),roi=poolRoi(p);
       const hasPending=(p.rewards||[]).some(r=>r.state==='pendiente');
       const rangeInfo=v3RangeInfo(p);
       const v3Class=p.status==='active'?(rangeInfo.status==='out'?'out-range':rangeInfo.status==='near'?'near-range':''):'';
       const statusClass=p.status==='closed'?'closed':hasPending?'rewards':v3Class;
       const badge=p.status==='closed'?'<span class="badge badge-closed">Cerrada</span>':hasPending?'<span class="badge badge-rewards">Rewards pendientes</span>':'<span class="badge badge-active">Activa</span>';
       h+=`<div class="pool-card ${statusClass}" onclick="go('detail',{detailId:'${p.id}'})">`;
-      h+=`<div class="pool-top"><div><div class="pool-pair">${p.taSymbol}/${p.tbSymbol}</div><div class="pool-meta">${p.protocol||''} · ${p.network||''}</div></div>`;
-      h+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badge}${v3StatusBadge(p)}<span class="wtag" style="background:${WALLETS[p.wallet]?.color||'#666'}20;color:${WALLETS[p.wallet]?.color||'#666'}">${WALLETS[p.wallet]?.name||p.wallet}</span></div></div>`;
+      h+=`<div class="pool-top"><div><div class="pool-pair">${esc(p.taSymbol)}/${esc(p.tbSymbol)}</div><div class="pool-meta">${esc(p.protocol||'')} · ${esc(p.network||'')}</div></div>`;
+      h+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badge}${v3StatusBadge(p)}<span class="wtag" style="background:${WALLETS[p.wallet]?.color||'#666'}20;color:${WALLETS[p.wallet]?.color||'#666'}">${esc(WALLETS[p.wallet]?.name||p.wallet)}</span></div></div>`;
       h+=`<div class="pool-grid">`;
       h+=`<div class="pool-stat"><div class="ps-label">Capital</div><div class="ps-val">${fmt(cap)}</div></div>`;
       h+=`<div class="pool-stat"><div class="ps-label">${p.status==='closed'?'Val. salida':'Val. actual'}</div><div class="ps-val">${fmt(p.status==='closed'?poolExitVal(p):poolCurrentVal(p))}</div></div>`;
       h+=`<div class="pool-stat"><div class="ps-label">RENDIMIENTO neto</div><div class="ps-val ${pnlClass(pnl)}">${fmt(pnl)}</div></div>`;
-      h+=`<div class="pool-stat"><div class="ps-label">ROI / APY</div><div class="ps-val ${pnlClass(roi)}">${fmtPct(roi)} <span style="font-size:.78rem;color:var(--tx3)">${fmtP(apy)}% APY</span></div></div>`;
+      h+=`<div class="pool-stat"><div class="ps-label">ROI</div><div class="ps-val ${pnlClass(roi)}">${fmtPct(roi)}</div></div>`;
       h+=`</div>${renderV3Mini(p)}</div>`;
     });
     h+=`</div>`;
@@ -844,8 +1035,8 @@ function renderV3Mini(p){
       <div class="v3-range-caps"><span>${i.ready?fmtP(i.min):'Min'}</span><span>${i.ready?fmtP(i.max):'Max'}</span></div>
       <div class="range-line"><span class="range-marker ${markerCls}" style="left:${i.ready?i.pos:50}%"></span></div>
     </div>
-    <div><div class="v3-label">Precio ${p.taSymbol}/${p.tbSymbol}</div><div class="v3-val">${price}</div></div>
-    <div><div class="v3-label">Borde más cercano</div><div class="v3-val ${i.status==='out'||i.status==='near'?'pnl-neg':''}">${i.ready?fmtP(i.distance)+'%':'—'}</div></div>
+    <div><div class="v3-label">Precio ${esc(p.taSymbol)}/${esc(p.tbSymbol)}</div><div class="v3-val">${price}</div></div>
+    <div><div class="v3-label">Borde más cercano</div><div class="v3-val ${i.status==='out'||i.status==='near'?'pnl-neg':''}">${i.ready?fmtP(i.distance)+'%':'—'}${i.ready?` <span style="font-size:.7rem;color:var(--tx3)">límite ${fmtP(i.alert)}%</span>`:''}</div></div>
     <div><div class="v3-label">Rewards / APR</div><div class="v3-val">${fmt(poolIncome(p))} <span style="font-size:.78rem;color:var(--tx3)">${fmtP(v3FeeApr(p))}%</span></div></div>
   </div>`;
 }
@@ -855,17 +1046,17 @@ function renderV3Detail(p){
   return `<div class="detail-section card"><h3>Control V3</h3>
     <div class="v3-detail-grid">
       <div class="v3-detail-card"><div class="label">Estado</div><div class="val">${i.label}</div></div>
-      <div class="v3-detail-card"><div class="label">Precio actual</div><div class="val">${i.price?fmtP(i.price):'0.00'} ${p.tbSymbol}/${p.taSymbol}</div></div>
+      <div class="v3-detail-card"><div class="label">Precio actual</div><div class="val">${i.price?fmtP(i.price):'0.00'} ${esc(p.tbSymbol)}/${esc(p.taSymbol)}</div></div>
       <div class="v3-detail-card"><div class="label">Distancia borde</div><div class="val ${i.status==='out'||i.status==='near'?'pnl-neg':'pnl-pos'}">${i.ready?fmtP(i.distance)+'%':'—'}</div></div>
       <div class="v3-detail-card"><div class="label">APR rewards</div><div class="val">${fmtP(v3FeeApr(p))}%</div></div>
       <div class="v3-detail-card"><div class="label">Fee tier</div><div class="val">${p.feeTier?fmtP(+p.feeTier)+'%':'—'}</div></div>
       <div class="v3-detail-card"><div class="label">Reclamado fuera</div><div class="val">${fmt(rewardClaimed(p))}</div></div>
       <div class="v3-detail-card"><div class="label">Pendiente</div><div class="val">${fmt(rewardPending(p))}</div></div>
       <div class="v3-detail-card"><div class="label">Reinvertido</div><div class="val">${fmt(reinvestedRewards(p))}</div></div>
-      <div class="v3-detail-card"><div class="label">${p.taSymbol} actual</div><div class="val">${fmtQty(+p.curTaQty||0)}</div></div>
-      <div class="v3-detail-card"><div class="label">${p.tbSymbol} actual</div><div class="val">${fmtQty(+p.curTbQty||0)}</div></div>
-      <div class="v3-detail-card"><div class="label">Precio ${p.taSymbol}</div><div class="val">${fmtPrice(poolTokenPrice(p,'a'))}</div></div>
-      <div class="v3-detail-card"><div class="label">Precio ${p.tbSymbol}</div><div class="val">${fmtPrice(poolTokenPrice(p,'b'))}</div></div>
+      <div class="v3-detail-card"><div class="label">${esc(p.taSymbol)} actual</div><div class="val">${fmtQty(+p.curTaQty||0)}</div></div>
+      <div class="v3-detail-card"><div class="label">${esc(p.tbSymbol)} actual</div><div class="val">${fmtQty(+p.curTbQty||0)}</div></div>
+      <div class="v3-detail-card"><div class="label">Precio ${esc(p.taSymbol)}</div><div class="val">${fmtPrice(poolTokenPrice(p,'a'))}</div></div>
+      <div class="v3-detail-card"><div class="label">Precio ${esc(p.tbSymbol)}</div><div class="val">${fmtPrice(poolTokenPrice(p,'b'))}</div></div>
     </div>
     <div class="v3-range-panel">
       <div class="v3-range-caps"><span>Min ${i.ready?fmtP(i.min):'—'}</span><span>Max ${i.ready?fmtP(i.max):'—'}</span></div>
@@ -878,28 +1069,28 @@ function renderV3Detail(p){
 function renderDetail(app){
   const p=db.positions.find(x=>x.id===state.detailId);
   if(!p){go('pools');return}
-  const cap=poolCap(p),pnl=poolPnl(p),roi=poolRoi(p),apy=poolApy(p),days=poolDays(p);
+  const cap=poolCap(p),pnl=poolPnl(p),roi=poolRoi(p),days=poolDays(p);
   const isClosed=p.status==='closed';
   const hasPending=(p.rewards||[]).some(r=>r.state==='pendiente');
   const badge=isClosed?'<span class="badge badge-closed">Cerrada</span>':hasPending?'<span class="badge badge-rewards">Rewards pendientes</span>':'<span class="badge badge-active">Activa</span>';
 
   let h=`<div class="fade-in"><button class="btn btn-secondary" onclick="go('pools')" style="margin-bottom:16px">← Volver</button>`;
-  h+=`<div class="detail-header"><div class="detail-pair">${p.taSymbol}/${p.tbSymbol}</div>`;
-  h+=`<div class="detail-meta">${badge}<span>${p.protocol||''} · ${p.network||''}</span><span>${days} días</span>`;
-  h+=`<span class="wtag" style="background:${WALLETS[p.wallet]?.color||'#666'}20;color:${WALLETS[p.wallet]?.color||'#666'}">${WALLETS[p.wallet]?.name||p.wallet}</span></div></div>`;
+  h+=`<div class="detail-header"><div class="detail-pair">${esc(p.taSymbol)}/${esc(p.tbSymbol)}</div>`;
+  h+=`<div class="detail-meta">${badge}<span>${esc(p.protocol||'')} · ${esc(p.network||'')}</span><span>${days} días</span>`;
+  h+=`<span class="wtag" style="background:${WALLETS[p.wallet]?.color||'#666'}20;color:${WALLETS[p.wallet]?.color||'#666'}">${esc(WALLETS[p.wallet]?.name||p.wallet)}</span></div></div>`;
 
   // Entrada
   const taPct=cap?(p.taQty*p.taPrice/cap*100):50;const tbPct=100-taPct;
   h+=`<div class="detail-section card"><h3>📥 Entrada</h3><div class="metrics m3"><div class="metric"><div class="label">Capital total</div><div class="val sm">${fmt(cap)}</div><div class="sub">${p.dateIn||''}</div></div>`;
-  h+=`<div class="metric"><div class="label">${p.taSymbol}</div><div class="val sm">${fmtQty(p.taQty)} × ${fmtPrice(p.taPrice)}</div><div class="sub">${fmtP(taPct)}% del total</div></div>`;
-  h+=`<div class="metric"><div class="label">${p.tbSymbol}</div><div class="val sm">${fmtQty(p.tbQty)} × ${fmtPrice(p.tbPrice)}</div><div class="sub">${fmtP(tbPct)}% del total</div></div></div></div>`;
+  h+=`<div class="metric"><div class="label">${esc(p.taSymbol)}</div><div class="val sm">${fmtQty(p.taQty)} × ${fmtPrice(p.taPrice)}</div><div class="sub">${fmtP(taPct)}% del total</div></div>`;
+  h+=`<div class="metric"><div class="label">${esc(p.tbSymbol)}</div><div class="val sm">${fmtQty(p.tbQty)} × ${fmtPrice(p.tbPrice)}</div><div class="sub">${fmtP(tbPct)}% del total</div></div></div></div>`;
 
   if(isClosed){
     // Salida
     const ev=poolExitVal(p);
     h+=`<div class="detail-section card"><h3>📤 Salida</h3><div class="metrics m3"><div class="metric"><div class="label">Valor salida</div><div class="val sm">${fmt(ev)}</div><div class="sub">${p.dateOut||''}</div></div>`;
-    h+=`<div class="metric"><div class="label">${p.taSymbol}</div><div class="val sm">${fmtQty(p.exitTaQty)} × ${fmtPrice(p.exitTaPrice)}</div></div>`;
-    h+=`<div class="metric"><div class="label">${p.tbSymbol}</div><div class="val sm">${fmtQty(p.exitTbQty)} × ${fmtPrice(p.exitTbPrice)}</div></div></div></div>`;
+    h+=`<div class="metric"><div class="label">${esc(p.taSymbol)}</div><div class="val sm">${fmtQty(p.exitTaQty)} × ${fmtPrice(p.exitTaPrice)}</div></div>`;
+    h+=`<div class="metric"><div class="label">${esc(p.tbSymbol)}</div><div class="val sm">${fmtQty(p.exitTbQty)} × ${fmtPrice(p.exitTbPrice)}</div></div></div></div>`;
     // IL
     const holdVal=(p.taQty*(p.exitTaPrice||0))+(p.tbQty*(p.exitTbPrice||0));
     const il=holdVal-ev;
@@ -918,8 +1109,8 @@ function renderDetail(app){
     // Rebalance
     const exitTaPct=ev?((p.exitTaQty*p.exitTaPrice)/ev*100):50;
     h+=`<div class="detail-section card"><h3>⚖️ Reequilibrio post-salida</h3>`;
-    h+=`<div style="font-size:.88rem"><div style="margin-bottom:8px"><strong>${p.taSymbol}:</strong> Entrada ${fmtP(taPct)}% → Salida ${fmtP(exitTaPct)}%</div>`;
-    h+=`<div><strong>${p.tbSymbol}:</strong> Entrada ${fmtP(tbPct)}% → Salida ${fmtP(100-exitTaPct)}%</div></div></div>`;
+    h+=`<div style="font-size:.88rem"><div style="margin-bottom:8px"><strong>${esc(p.taSymbol)}:</strong> Entrada ${fmtP(taPct)}% → Salida ${fmtP(exitTaPct)}%</div>`;
+    h+=`<div><strong>${esc(p.tbSymbol)}:</strong> Entrada ${fmtP(tbPct)}% → Salida ${fmtP(100-exitTaPct)}%</div></div></div>`;
   }else{
     // Active: tracking
     h+=`<div class="detail-section card"><h3>📈 Seguimiento</h3><div class="metrics m3">`;
@@ -935,8 +1126,8 @@ function renderDetail(app){
     h+=`<div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Importe</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
     (p.rewards||[]).forEach(r=>{
       const bc=r.state==='reinvertido'?'badge-reinvertido':r.state==='pendiente'?'badge-pendiente':'badge-retirado';
-      const rSub=r.state==='reinvertido'?`<div class="price-sub">+${fmtQty(+r.taQty||0)} ${p.taSymbol} / +${fmtQty(+r.tbQty||0)} ${p.tbSymbol}</div>`:'';
-      h+=`<tr><td>${r.date||''}</td><td>${fmt(+r.usd)}${rSub}</td><td><span class="badge ${bc}">${r.state}</span></td>`;
+      const rSub=r.state==='reinvertido'?`<div class="price-sub">+${fmtQty(+r.taQty||0)} ${esc(p.taSymbol)} / +${fmtQty(+r.tbQty||0)} ${esc(p.tbSymbol)}</div>`:'';
+      h+=`<tr><td>${r.date||''}</td><td>${fmt(+r.usd)}${rSub}</td><td><span class="badge ${bc}">${esc(r.state)}</span></td>`;
       h+=`<td><div class="actions"><button class="act-btn" onclick="editReward('${p.id}','${r.id}')">✎</button><button class="act-btn del" onclick="deleteReward('${p.id}','${r.id}')">✕</button></div></td></tr>`;
     });
     h+=`</tbody></table></div>`;
@@ -973,7 +1164,7 @@ function renderSummary(app){
     const w=WALLETS[wid];const h1=walletHodl(wid);const d1=walletDefi(wid);const rew=walletRewards(wid);
     const activeP=db.positions.filter(p=>p.wallet===wid&&p.status==='active').length;
     const roiW=(h1+d1)>0?((db.assets.filter(a=>a.wallet===wid).reduce((s,a)=>s+assetPnl(a),0))/(h1||1)*100):0;
-    h+=`<div class="summary-wallet"><h3><div style="width:12px;height:12px;border-radius:4px;background:${w.color}"></div>${w.name}<span style="font-size:.78rem;color:var(--tx3);font-weight:400;margin-left:4px">${w.type}</span></h3>`;
+    h+=`<div class="summary-wallet"><h3><div style="width:12px;height:12px;border-radius:4px;background:${w.color}"></div>${esc(w.name)}<span style="font-size:.78rem;color:var(--tx3);font-weight:400;margin-left:4px">${w.type}</span></h3>`;
     h+=`<div class="sw-row"><span class="swl">HODL</span><span>${fmt(h1)}</span></div>`;
     h+=`<div class="sw-row"><span class="swl">DeFi</span><span>${fmt(d1)}</span></div>`;
     h+=`<div class="sw-row"><span class="swl">Rewards</span><span>${fmt(rew)}</span></div>`;
@@ -987,7 +1178,7 @@ function renderSummary(app){
     h+=`<div class="card ranking" style="margin-bottom:24px"><div class="card-header">Ranking por ROI</div>`;
     sorted.forEach((p,i)=>{
       const roi=poolRoi(p);
-      h+=`<div class="rank-item" onclick="go('detail',{detailId:'${p.id}'})" style="cursor:pointer"><span class="rank-pos">${i+1}</span><div class="legend-dot" style="background:${WALLETS[p.wallet]?.color||'#666'};width:10px;height:10px;border-radius:50%"></div><span class="rank-pair">${p.taSymbol}/${p.tbSymbol}</span>`;
+      h+=`<div class="rank-item" onclick="go('detail',{detailId:'${p.id}'})" style="cursor:pointer"><span class="rank-pos">${i+1}</span><div class="legend-dot" style="background:${WALLETS[p.wallet]?.color||'#666'};width:10px;height:10px;border-radius:50%"></div><span class="rank-pair">${esc(p.taSymbol)}/${esc(p.tbSymbol)}</span>`;
       if(p.status==='closed')h+=`<span class="badge badge-closed" style="margin-left:8px">Cerrada</span>`;
       h+=`<span class="rank-roi ${pnlClass(roi)}">${fmtPct(roi)}</span></div>`;
     });
@@ -1001,7 +1192,7 @@ function renderSummary(app){
       const pRew=(p.rewards||[]).filter(r=>r.state==='pendiente').reduce((s,r)=>s+(+r.usd||0),0);
       const rInfo=v3RangeInfo(p);
       const note=rInfo.status==='out'?rInfo.label:rInfo.status==='near'?'Cerca del borde':'Rewards pendientes';
-      h+=`<div class="alert-item" onclick="go('detail',{detailId:'${p.id}'})" style="cursor:pointer"><span>${p.taSymbol}/${p.tbSymbol} — ${WALLETS[p.wallet]?.name||p.wallet}</span><span class="${rInfo.status==='out'||rInfo.status==='near'?'pnl-neg':'pnl-pos'}">${note} · ${fmt(pRew)}</span></div>`;
+      h+=`<div class="alert-item" onclick="go('detail',{detailId:'${p.id}'})" style="cursor:pointer"><span>${esc(p.taSymbol)}/${esc(p.tbSymbol)} — ${esc(WALLETS[p.wallet]?.name||p.wallet)}</span><span class="${rInfo.status==='out'||rInfo.status==='near'?'pnl-neg':'pnl-pos'}">${note} · ${fmt(pRew)}</span></div>`;
     });
     h+=`</div>`;
   }
@@ -1065,12 +1256,76 @@ function renderEvolution(app){
   h+=`<span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:0;border-top:3px dashed var(--tx3)"></span>Invertido (coste)</span></div>`;
   h+=`<div style="position:relative"><canvas id="evoChart" style="width:100%;height:280px;display:block"></canvas></div>`;
   if((db.snapshots||[]).length<2)h+=`<div class="hint" style="margin-top:12px">La línea de <strong>coste</strong> usa todo tu historial (compras y ventas). La de <strong>valor de mercado</strong> se va dibujando cada vez que pulsas sincronizar (↻); de momento tiene pocos puntos, en unos días tendrás la curva. Más adelante le añadimos el histórico de CoinGecko para rellenar el pasado.</div>`;
-  h+=`</div></div>`;
+  h+=`</div>`;
+  // Benchmark: ¿estás batiendo al mercado?
+  h+=`<div class="card" style="margin-top:20px"><div class="card-header">🥊 ¿Estás batiendo al mercado?</div>`;
+  h+=`<div class="pool-filters" style="margin-bottom:14px">`;
+  Object.keys(BENCHES).forEach(k=>{h+=`<button class="pill ${(state.benchSel||'bitcoin')===k?'active':''}" onclick="state.benchSel='${k}';render()">${BENCHES[k].label}</button>`});
+  h+=`</div><div id="benchBox"></div></div>`;
+  h+=`</div>`;
   app.innerHTML=h;
   setTimeout(()=>drawEvoChart(buildCostSeries(),buildValueSeries(),range),60);
+  loadBench();
 }
-function drawEvoChart(cost,value,range){
-  const c=document.getElementById('evoChart');if(!c)return;
+
+// ===================== BENCHMARK =====================
+// Simula: "si cada aportación tuya se hubiera invertido ese mismo día en X, ¿cuánto tendrías hoy?"
+const BENCHES={bitcoin:{label:'Bitcoin'},ethereum:{label:'Ethereum'},'pax-gold':{label:'Oro (PAXG)'}};
+const benchCache={};
+function investEvents(){
+  const evts=[];
+  db.assets.forEach(a=>(a.purchases||[]).forEach(p=>{const usd=(+p.qty||0)*(+p.price||0);if(usd)evts.push({date:p.date||today(),usd})}));
+  db.positions.forEach(p=>{
+    if(p.dateIn)evts.push({date:p.dateIn,usd:poolCap(p)});
+    if(p.status==='closed'&&p.dateOut)evts.push({date:p.dateOut,usd:-poolCap(p)});
+  });
+  return evts.sort((a,b)=>a.date<b.date?-1:1);
+}
+async function loadBench(){
+  const id=state.benchSel||'bitcoin';
+  const box=document.getElementById('benchBox');if(!box)return;
+  const evts=investEvents();
+  if(!evts.length){box.innerHTML='<div class="hint">Añade compras con fecha para poder comparar.</div>';return}
+  box.innerHTML='<div class="hint">Cargando datos de mercado…</div>';
+  let prices=benchCache[id];
+  if(!prices){
+    try{
+      const r=await fetch(`https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=365&interval=daily`);
+      const d=await r.json();
+      prices=(d.prices||[]).map(p=>({t:p[0],v:p[1]}));
+      if(prices.length)benchCache[id]=prices;
+    }catch(e){}
+  }
+  if(!prices||!prices.length){box.innerHTML='<div class="hint">No pude cargar el histórico (límite del API gratuito de CoinGecko). Prueba de nuevo en 1 minuto.</div>';return}
+  if(state.view!=='evolution'||(state.benchSel||'bitcoin')!==id)return; // el usuario cambió de vista mientras cargaba
+  const priceAt=t=>{
+    if(t<=prices[0].t)return prices[0].v;
+    for(let i=prices.length-1;i>=0;i--)if(prices[i].t<=t)return prices[i].v;
+    return prices[prices.length-1].v;
+  };
+  let units=0,invested=0,clamped=false;
+  evts.forEach(e=>{
+    const t=dateMs(e.date);
+    if(t<prices[0].t)clamped=true;
+    const pr=priceAt(t);
+    if(pr>0)units+=e.usd/pr;
+    invested+=e.usd;
+  });
+  const benchVal=units*prices[prices.length-1].v;
+  const t=portfolioTotals();
+  const myRet=invested>0?(t.value-invested)/invested*100:0;
+  const bRet=invested>0?(benchVal-invested)/invested*100:0;
+  const diff=t.value-benchVal;
+  const lbl=BENCHES[id].label;
+  let h=`<div class="comparison" style="margin-bottom:12px">`;
+  h+=`<div class="comp-card"><h4>Tu portfolio</h4><div class="cv">${fmt(t.value)}</div><div class="${pnlClass(myRet)}" style="font-size:.82rem;margin-top:4px">${fmtPct(myRet)} sobre lo invertido</div></div>`;
+  h+=`<div class="comp-card"><h4>Mismo dinero en ${lbl}</h4><div class="cv">${fmt(benchVal)}</div><div class="${pnlClass(bRet)}" style="font-size:.82rem;margin-top:4px">${fmtPct(bRet)} sobre lo invertido</div></div></div>`;
+  h+=`<div class="verdict ${diff>=0?'pos':'neg'}">${diff>=0?'✅ Estás batiendo a '+lbl+' por ':'❌ '+lbl+' te gana por '}${fmt(Math.abs(diff))} (${fmtP(Math.abs(myRet-bRet))} puntos)</div>`;
+  h+=`<div class="hint" style="margin-top:10px">Simulación: cada aportación tuya (compras y entradas en pools, en su fecha real) invertida en ${lbl} ese mismo día.${clamped?' ⚠ Las aportaciones de hace más de 365 días se valoran al precio más antiguo disponible (límite del API gratuito).':''}</div>`;
+  box.innerHTML=h;
+}
+function drawEvoChart(cost,value,range,id){
+  const c=document.getElementById(id||'evoChart');if(!c)return;
   const dpr=window.devicePixelRatio||1,cssW=c.clientWidth||600,cssH=c.clientHeight||280;
   c.width=cssW*dpr;c.height=cssH*dpr;
   const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,cssW,cssH);
@@ -1115,8 +1370,8 @@ function closeModal(){$('#modalOverlay').classList.remove('open')}
 // Config
 function openConfig(){
   openModal(`<h2>⚙ Configuración</h2>
-    <div class="form-group"><label>Nombre Wallet 1</label><input id="cfgW1" value="${db.config.wallet1Name||'Wallet 1'}"></div>
-    <div class="form-group"><label>Nombre Wallet 2</label><input id="cfgW2" value="${db.config.wallet2Name||'Wallet 2 (compartida)'}"></div>
+    <div class="form-group"><label>Nombre Wallet 1</label><input id="cfgW1" value="${esc(db.config.wallet1Name||'Wallet 1')}"></div>
+    <div class="form-group"><label>Nombre Wallet 2</label><input id="cfgW2" value="${esc(db.config.wallet2Name||'Wallet 2 (compartida)')}"></div>
     <button class="btn btn-primary" onclick="saveConfig()" style="width:100%;margin-top:8px">Guardar</button>`);
 }
 function saveConfig(){
@@ -1134,7 +1389,7 @@ function openAssetSelector(){
       const wc=WALLETS[a.wallet]?.color||'var(--tx3)';
       const wn=WALLETS[a.wallet]?.name||a.wallet;
       h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg3);border-radius:var(--r3);margin-bottom:8px;cursor:pointer;border-left:4px solid ${wc}" onclick="closeModal();openPurchaseModal('${a.id}')">`;
-      h+=`<div><strong>${a.symbol}</strong> — ${a.name||''}<div style="font-size:.78rem;color:${wc};font-weight:600;margin-top:2px">${wn}</div></div>`;
+      h+=`<div><strong>${esc(a.symbol)}</strong> — ${esc(a.name||'')}<div style="font-size:.78rem;color:${wc};font-weight:600;margin-top:2px">${esc(wn)}</div></div>`;
       h+=`<span style="color:var(--acc)">+ compra</span></div>`;
     });
     h+=`</div><div class="divider"></div>`;
@@ -1143,25 +1398,64 @@ function openAssetSelector(){
   openModal(h);
 }
 
-// New asset
+// New asset (con autocompletado de CoinGecko: escribe el ticker y elige la moneda)
+let naTimer=null;
 function openNewAssetModal(){
+  window.__naCg=null;window.__naResults=[];
   openModal(`<h2>Nuevo activo</h2>
-    <div class="form-group"><label>Wallet</label><select id="naWallet"><option value="wallet1">${WALLETS.wallet1.name}</option><option value="wallet2">${WALLETS.wallet2.name}</option></select></div>
-    <div class="form-row"><div class="form-group"><label>Símbolo</label><input id="naSym" placeholder="BTC"></div><div class="form-group"><label>Nombre</label><input id="naName" placeholder="Bitcoin"></div></div>
+    <div class="form-group"><label>Wallet</label><select id="naWallet"><option value="wallet1">${esc(WALLETS.wallet1.name)}</option><option value="wallet2">${esc(WALLETS.wallet2.name)}</option></select></div>
+    <div class="form-row"><div class="form-group"><label>Símbolo</label><input id="naSym" placeholder="BTC" autocomplete="off" oninput="naSymInput()"></div><div class="form-group"><label>Nombre</label><input id="naName" placeholder="Bitcoin"></div></div>
+    <div id="naSug"></div>
     <div class="form-group"><label>Precio actual</label><input id="naPrice" type="number" step="any" placeholder="0.00"></div>
     <div class="divider"></div><h3 style="margin-bottom:12px;font-size:.95rem">Primera compra</h3>
     <div class="form-row3"><div class="form-group"><label>Cantidad</label><input id="naQty" type="number" step="any"></div><div class="form-group"><label>Precio compra</label><input id="naBuyP" type="number" step="any"></div><div class="form-group"><label>Fecha</label><input id="naDate" type="date" value="${today()}"></div></div>
     <button class="btn btn-primary" onclick="saveNewAsset()" style="width:100%;margin-top:8px">Guardar</button>`);
 }
+function naSymInput(){
+  window.__naCg=null;
+  clearTimeout(naTimer);
+  const q=($('#naSym').value||'').trim();
+  if(q.length<2){const b=$('#naSug');if(b)b.innerHTML='';return}
+  naTimer=setTimeout(()=>naSearch(q),350);
+}
+async function naSearch(q){
+  try{
+    const r=await fetch('https://api.coingecko.com/api/v3/search?query='+encodeURIComponent(q));
+    const d=await r.json();
+    window.__naResults=(d.coins||[]).slice(0,5);
+    const box=$('#naSug');if(!box)return;
+    if(!window.__naResults.length){box.innerHTML='<div class="hint" style="margin-bottom:12px">Sin resultados en CoinGecko — rellena los datos a mano</div>';return}
+    box.innerHTML='<div class="na-sug-list">'+window.__naResults.map((c,i)=>
+      `<div class="na-sug" onclick="naPick(${i})">${c.thumb?`<img src="${esc(c.thumb)}" alt="">`:''}<strong>${esc((c.symbol||'').toUpperCase())}</strong> ${esc(c.name)}<span>${c.market_cap_rank?'#'+c.market_cap_rank:''}</span></div>`).join('')+'</div>';
+  }catch(e){}
+}
+async function naPick(i){
+  const c=(window.__naResults||[])[i];if(!c)return;
+  window.__naCg={id:c.id,img:c.large||c.thumb||''};
+  $('#naSym').value=(c.symbol||'').toUpperCase();
+  $('#naName').value=c.name||'';
+  const box=$('#naSug');
+  if(box)box.innerHTML=`<div class="hint" style="margin-bottom:12px">✓ ${esc(c.name)} vinculado a CoinGecko · cargando precio…</div>`;
+  try{
+    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+encodeURIComponent(c.id)+'&vs_currencies=usd');
+    const d=await r.json();
+    if(d[c.id]&&d[c.id].usd!=null){
+      const pEl=$('#naPrice');if(pEl)pEl.value=d[c.id].usd;
+      const bp=$('#naBuyP');if(bp&&!bp.value)bp.value=d[c.id].usd;
+      if(box)box.innerHTML=`<div class="hint" style="margin-bottom:12px">✓ ${esc(c.name)} · precio actual cargado automáticamente</div>`;
+    }
+  }catch(e){}
+}
 function saveNewAsset(){
-  const a={id:uid(),wallet:$('#naWallet').value,symbol:($('#naSym').value||'').toUpperCase(),name:$('#naName').value,price:+$('#naPrice').value||0,purchases:[{id:uid(),qty:+$('#naQty').value||0,price:+$('#naBuyP').value||0,date:$('#naDate').value||today()}],qty:0,buyPrice:0};
+  const sym=($('#naSym').value||'').toUpperCase();
+  const a={id:uid(),wallet:$('#naWallet').value,symbol:sym,name:$('#naName').value,price:+$('#naPrice').value||0,cgId:window.__naCg?window.__naCg.id:(CG_MAP[sym]||null),img:window.__naCg?window.__naCg.img:null,purchases:[{id:uid(),qty:+$('#naQty').value||0,price:+$('#naBuyP').value||0,date:$('#naDate').value||today()}],qty:0,buyPrice:0};
   recalcAsset(a);db.assets.push(a);saveDB(db);closeModal();render();
 }
 
 // Purchase modal
 function openPurchaseModal(assetId){
   const a=db.assets.find(x=>x.id===assetId);if(!a)return;
-  let h=`<h2>Compra / venta — ${a.symbol}</h2>`;
+  let h=`<h2>Compra / venta — ${esc(a.symbol)}</h2>`;
   h+=`<div class="purchase-history">`;
   (a.purchases||[]).forEach(p=>{
     const isSell=(+p.qty||0)<0;
@@ -1169,7 +1463,7 @@ function openPurchaseModal(assetId){
     h+=`<div class="purchase-item"><span>${p.date||'—'} · ${lbl} ${fmtQty(Math.abs(p.qty))} × ${fmtPrice(p.price)} = ${fmt(Math.abs(p.qty*p.price))}</span><button class="act-btn del" onclick="deletePurchase('${a.id}','${p.id}')">✕</button></div>`;
   });
   h+=`</div>`;
-  h+=`<div class="preview-box"><div class="pv-label">Tienes ahora</div><div class="pv-val">${fmtQty(a.qty)} ${a.symbol} · PM ${fmtPrice(a.buyPrice)}</div></div>`;
+  h+=`<div class="preview-box"><div class="pv-label">Tienes ahora</div><div class="pv-val">${fmtQty(a.qty)} ${esc(a.symbol)} · PM ${fmtPrice(a.buyPrice)}</div></div>`;
   h+=`<div class="divider"></div>`;
   h+=`<div class="form-group"><label>Tipo de operación</label><select id="pType" onchange="onPTypeChange('${a.id}')"><option value="buy">Compra (sumar)</option><option value="sell">Venta (restar)</option></select></div>`;
   h+=`<div class="form-row3"><div class="form-group"><label>Cantidad</label><input id="pQty" type="number" step="any" oninput="previewPM('${a.id}')"></div><div class="form-group" id="pPriceWrap"><label>Precio compra</label><input id="pPrice" type="number" step="any" oninput="previewPM('${a.id}')"></div><div class="form-group"><label>Fecha</label><input id="pDate" type="date" value="${today()}"></div></div>`;
@@ -1191,7 +1485,7 @@ function previewPM(aid){
     if(q>0){
       const rem=a.qty-q;
       $('#pmPreview').style.display='';$('#pmPreviewLbl').textContent='Te quedarán';
-      $('#pmPreviewVal').textContent=`${fmtQty(rem)} ${a.symbol}`+(rem<0?' ⚠ saldo negativo':'');
+      $('#pmPreviewVal').textContent=`${fmtQty(rem)} ${esc(a.symbol)}`+(rem<0?' ⚠ saldo negativo':'');
     }else{$('#pmPreview').style.display='none'}
     return;
   }
@@ -1228,11 +1522,11 @@ function openSwapModal(assetId){
   const from=db.assets.find(x=>x.id===assetId);if(!from)return;
   // Activos destino: misma wallet, distinto símbolo
   const dests=db.assets.filter(a=>a.wallet===from.wallet&&a.id!==from.id);
-  let opts=dests.map(a=>`<option value="${a.id}">${a.symbol} — ${fmtQty(a.qty)}</option>`).join('');
+  let opts=dests.map(a=>`<option value="${a.id}">${esc(a.symbol)} — ${fmtQty(a.qty)}</option>`).join('');
   opts+=`<option value="__new__">+ Nuevo activo…</option>`;
-  let h=`<h2>Swap — vendes ${from.symbol}</h2>`;
-  h+=`<div class="preview-box"><div class="pv-label">Disponible</div><div class="pv-val">${fmtQty(from.qty)} ${from.symbol} · PM ${fmtPrice(from.buyPrice)}</div></div>`;
-  h+=`<div class="form-group"><label>Cantidad de ${from.symbol} que gastas</label><input id="swFromQty" type="number" step="any" oninput="swPreview('${from.id}')"></div>`;
+  let h=`<h2>Swap — vendes ${esc(from.symbol)}</h2>`;
+  h+=`<div class="preview-box"><div class="pv-label">Disponible</div><div class="pv-val">${fmtQty(from.qty)} ${esc(from.symbol)} · PM ${fmtPrice(from.buyPrice)}</div></div>`;
+  h+=`<div class="form-group"><label>Cantidad de ${esc(from.symbol)} que gastas</label><input id="swFromQty" type="number" step="any" oninput="swPreview('${from.id}')"></div>`;
   h+=`<div class="divider"></div>`;
   h+=`<div class="form-group"><label>Recibes en</label><select id="swDest" onchange="swDestChange()">${opts}</select></div>`;
   h+=`<div id="swNewWrap" style="display:none"><div class="form-row"><div class="form-group"><label>Símbolo nuevo</label><input id="swNewSym"></div><div class="form-group"><label>Precio actual (USD)</label><input id="swNewPrice" type="number" step="any"></div></div></div>`;
@@ -1258,7 +1552,7 @@ function swPreview(fromId){
   const newPM=costUsd/tq;
   const rem=from.qty-fq;
   $('#swPrev').style.display='';
-  $('#swPrevVal').innerHTML=`Sales: ${fmtQty(fq)} ${from.symbol} (valor ${fmt(costUsd)})<br>Quedan: ${fmtQty(rem)} ${from.symbol}${rem<0?' ⚠':''}<br>Coste del recibido: ${fmtPrice(newPM)} / ud`;
+  $('#swPrevVal').innerHTML=`Sales: ${fmtQty(fq)} ${esc(from.symbol)} (valor ${fmt(costUsd)})<br>Quedan: ${fmtQty(rem)} ${esc(from.symbol)}${rem<0?' ⚠':''}<br>Coste del recibido: ${fmtPrice(newPM)} / ud`;
 }
 function confirmSwap(fromId){
   const from=db.assets.find(x=>x.id===fromId);if(!from)return;
@@ -1291,9 +1585,9 @@ function confirmSwap(fromId){
 // Edit asset
 function openEditAsset(aid){
   const a=db.assets.find(x=>x.id===aid);if(!a)return;
-  openModal(`<h2>Editar ${a.symbol}</h2>
-    <div class="form-group"><label>Wallet</label><select id="eaWallet"><option value="wallet1" ${a.wallet==='wallet1'?'selected':''}>${WALLETS.wallet1.name}</option><option value="wallet2" ${a.wallet==='wallet2'?'selected':''}>${WALLETS.wallet2.name}</option></select></div>
-    <div class="form-row"><div class="form-group"><label>Símbolo</label><input id="eaSym" value="${a.symbol}"></div><div class="form-group"><label>Nombre</label><input id="eaName" value="${a.name||''}"></div></div>
+  openModal(`<h2>Editar ${esc(a.symbol)}</h2>
+    <div class="form-group"><label>Wallet</label><select id="eaWallet"><option value="wallet1" ${a.wallet==='wallet1'?'selected':''}>${esc(WALLETS.wallet1.name)}</option><option value="wallet2" ${a.wallet==='wallet2'?'selected':''}>${esc(WALLETS.wallet2.name)}</option></select></div>
+    <div class="form-row"><div class="form-group"><label>Símbolo</label><input id="eaSym" value="${esc(a.symbol)}"></div><div class="form-group"><label>Nombre</label><input id="eaName" value="${esc(a.name||'')}"></div></div>
     <div class="form-group"><label>Precio actual</label><input id="eaPrice" type="number" step="any" value="${a.price||0}"></div>
     <button class="btn btn-primary" onclick="saveEditAsset('${a.id}')" style="width:100%;margin-top:8px">Guardar</button>`);
 }
@@ -1312,24 +1606,24 @@ function openPoolModal(pid){
   const p=pid?db.positions.find(x=>x.id===pid):null;
   const title=p?'Editar posición':'Nueva posición';
   openModal(`<h2>${title}</h2>
-    <div class="form-group"><label>Wallet</label><select id="ppWallet"><option value="wallet1" ${p?.wallet==='wallet1'?'selected':''}>${WALLETS.wallet1.name}</option><option value="wallet2" ${p?.wallet==='wallet2'?'selected':''}>${WALLETS.wallet2.name}</option></select></div>
-    <div class="form-row"><div class="form-group"><label>Protocolo</label><input id="ppProto" value="${p?.protocol||''}" placeholder="PancakeSwap"></div><div class="form-group"><label>Red</label><input id="ppNet" value="${p?.network||''}" placeholder="Base"></div></div>
+    <div class="form-group"><label>Wallet</label><select id="ppWallet"><option value="wallet1" ${p?.wallet==='wallet1'?'selected':''}>${esc(WALLETS.wallet1.name)}</option><option value="wallet2" ${p?.wallet==='wallet2'?'selected':''}>${esc(WALLETS.wallet2.name)}</option></select></div>
+    <div class="form-row"><div class="form-group"><label>Protocolo</label><input id="ppProto" value="${esc(p?.protocol||'')}" placeholder="PancakeSwap"></div><div class="form-group"><label>Red</label><input id="ppNet" value="${esc(p?.network||'')}" placeholder="Base"></div></div>
     <div class="form-group"><label>Fee tier (%)</label><input id="ppFeeTier" type="number" step="any" value="${p?.feeTier||''}" placeholder="0.30"></div>
     <div class="divider"></div><h3 style="margin-bottom:12px;font-size:.95rem">Token A</h3>
-    <div class="form-row3"><div class="form-group"><label>Símbolo</label><input id="ppTaS" value="${p?.taSymbol||''}" placeholder="ETH"></div><div class="form-group"><label>Cantidad</label><input id="ppTaQ" type="number" step="any" value="${p?.taQty||''}"></div><div class="form-group"><label>Precio entrada</label><input id="ppTaP" type="number" step="any" value="${p?.taPrice||''}"></div></div>
+    <div class="form-row3"><div class="form-group"><label>Símbolo</label><input id="ppTaS" value="${esc(p?.taSymbol||'')}" placeholder="ETH"></div><div class="form-group"><label>Cantidad</label><input id="ppTaQ" type="number" step="any" value="${p?.taQty||''}"></div><div class="form-group"><label>Precio entrada</label><input id="ppTaP" type="number" step="any" value="${p?.taPrice||''}"></div></div>
     <h3 style="margin-bottom:12px;font-size:.95rem">Token B</h3>
-    <div class="form-row3"><div class="form-group"><label>Símbolo</label><input id="ppTbS" value="${p?.tbSymbol||''}" placeholder="USDC"></div><div class="form-group"><label>Cantidad</label><input id="ppTbQ" type="number" step="any" value="${p?.tbQty||''}"></div><div class="form-group"><label>Precio entrada</label><input id="ppTbP" type="number" step="any" value="${p?.tbPrice||''}"></div></div>
+    <div class="form-row3"><div class="form-group"><label>Símbolo</label><input id="ppTbS" value="${esc(p?.tbSymbol||'')}" placeholder="USDC"></div><div class="form-group"><label>Cantidad</label><input id="ppTbQ" type="number" step="any" value="${p?.tbQty||''}"></div><div class="form-group"><label>Precio entrada</label><input id="ppTbP" type="number" step="any" value="${p?.tbPrice||''}"></div></div>
     <div class="form-group"><label>Fecha entrada</label><input id="ppDateIn" type="date" value="${p?.dateIn||today()}"></div>
     <div class="form-section-muted">
       <h3 style="margin-bottom:12px;font-size:.95rem">Control V3</h3>
       <div class="form-row3"><div class="form-group"><label>Precio actual A/B</label><input id="ppCurPriceAB" type="number" step="any" value="${p?.curPriceAB||''}" placeholder="USDC por ETH"></div><div class="form-group"><label>Rango mínimo</label><input id="ppRangeMin" type="number" step="any" value="${p?.rangeMin||''}"></div><div class="form-group"><label>Rango máximo</label><input id="ppRangeMax" type="number" step="any" value="${p?.rangeMax||''}"></div></div>
-      <div class="form-row"><div class="form-group"><label>Cantidad actual ${p?.taSymbol||'Token A'}</label><input id="ppCurTaQ" type="number" step="any" value="${p?.curTaQty??p?.taQty??''}"></div><div class="form-group"><label>Cantidad actual ${p?.tbSymbol||'Token B'}</label><input id="ppCurTbQ" type="number" step="any" value="${p?.curTbQty??p?.tbQty??''}"></div></div>
-      <div class="form-group"><label>Alerta borde (%)</label><input id="ppRangeAlert" type="number" step="any" value="${p?.rangeAlertPct||5}"></div>
+      ${p?`<div class="form-row"><div class="form-group"><label>Cantidad actual ${esc(p?.taSymbol||'Token A')}</label><input id="ppCurTaQ" type="number" step="any" value="${p?.curTaQty??p?.taQty??''}"></div><div class="form-group"><label>Cantidad actual ${esc(p?.tbSymbol||'Token B')}</label><input id="ppCurTbQ" type="number" step="any" value="${p?.curTbQty??p?.tbQty??''}"></div></div>`:''}
+      <div class="form-row"><div class="form-group"><label>Alerta borde inferior (%)</label><input id="ppAlertLow" type="number" step="any" value="${p?.rangeAlertLow??p?.rangeAlertPct??5}"></div><div class="form-group"><label>Alerta borde superior (%)</label><input id="ppAlertHigh" type="number" step="any" value="${p?.rangeAlertHigh??p?.rangeAlertPct??5}"></div></div>
     </div>
     ${p?.status==='closed'?`
     <div class="divider"></div><h3 style="margin-bottom:12px;font-size:.95rem">Datos de cierre</h3>
-    <div class="form-row3"><div class="form-group"><label>${p.taSymbol} salida qty</label><input id="ppExTaQ" type="number" step="any" value="${p.exitTaQty||''}"></div><div class="form-group"><label>${p.taSymbol} precio salida</label><input id="ppExTaP" type="number" step="any" value="${p.exitTaPrice||''}"></div><div class="form-group"><label>Fecha salida</label><input id="ppDateOut" type="date" value="${p.dateOut||''}"></div></div>
-    <div class="form-row3"><div class="form-group"><label>${p.tbSymbol} salida qty</label><input id="ppExTbQ" type="number" step="any" value="${p.exitTbQty||''}"></div><div class="form-group"><label>${p.tbSymbol} precio salida</label><input id="ppExTbP" type="number" step="any" value="${p.exitTbPrice||''}"></div><div class="form-group"><label>Fees salida (USD)</label><input id="ppExFees" type="number" step="any" value="${p.exitFees||''}"></div></div>`:''}
+    <div class="form-row3"><div class="form-group"><label>${esc(p.taSymbol)} salida qty</label><input id="ppExTaQ" type="number" step="any" value="${p.exitTaQty||''}"></div><div class="form-group"><label>${esc(p.taSymbol)} precio salida</label><input id="ppExTaP" type="number" step="any" value="${p.exitTaPrice||''}"></div><div class="form-group"><label>Fecha salida</label><input id="ppDateOut" type="date" value="${p.dateOut||''}"></div></div>
+    <div class="form-row3"><div class="form-group"><label>${esc(p.tbSymbol)} salida qty</label><input id="ppExTbQ" type="number" step="any" value="${p.exitTbQty||''}"></div><div class="form-group"><label>${esc(p.tbSymbol)} precio salida</label><input id="ppExTbP" type="number" step="any" value="${p.exitTbPrice||''}"></div><div class="form-group"><label>Fees salida (USD)</label><input id="ppExFees" type="number" step="any" value="${p.exitFees||''}"></div></div>`:''}
     <button class="btn btn-primary" onclick="savePool('${p?.id||''}')" style="width:100%;margin-top:12px">Guardar</button>`);
 }
 function openEditPool(pid){openPoolModal(pid)}
@@ -1341,10 +1635,10 @@ function savePool(pid){
   p.taSymbol=($('#ppTaS').value||'').toUpperCase();p.taQty=+$('#ppTaQ').value||0;p.taPrice=+$('#ppTaP').value||0;
   p.tbSymbol=($('#ppTbS').value||'').toUpperCase();p.tbQty=+$('#ppTbQ').value||0;p.tbPrice=+$('#ppTbP').value||0;
   p.dateIn=$('#ppDateIn').value||today();
-  const curTaRaw=$('#ppCurTaQ').value,curTbRaw=$('#ppCurTbQ').value;
+  const _curA=$('#ppCurTaQ'),_curB=$('#ppCurTbQ');const curTaRaw=_curA?_curA.value:'',curTbRaw=_curB?_curB.value:'';
   p.curPriceAB=+$('#ppCurPriceAB').value||0;p.rangeMin=+$('#ppRangeMin').value||0;p.rangeMax=+$('#ppRangeMax').value||0;
   p.curTaQty=curTaRaw===''?p.taQty:(+curTaRaw||0);p.curTbQty=curTbRaw===''?p.tbQty:(+curTbRaw||0);
-  p.rangeAlertPct=+$('#ppRangeAlert').value||5;
+  p.rangeAlertLow=+$('#ppAlertLow').value||5;p.rangeAlertHigh=+$('#ppAlertHigh').value||5;
   refreshPoolValue(p);
   if(p.status==='closed'){
     const el=id=>document.getElementById(id);
@@ -1359,9 +1653,9 @@ function savePool(pid){
 function closePosition(pid){
   const p=db.positions.find(x=>x.id===pid);if(!p)return;
   const taPrice=poolTokenPrice(p,'a'),tbPrice=poolTokenPrice(p,'b');
-  openModal(`<h2>Cerrar posición — ${p.taSymbol}/${p.tbSymbol}</h2>
-    <div class="form-row3"><div class="form-group"><label>${p.taSymbol} salida qty</label><input id="cpExTaQ" type="number" step="any" value="${p.curTaQty||''}"></div><div class="form-group"><label>${p.taSymbol} precio salida</label><input id="cpExTaP" type="number" step="any" value="${taPrice||''}"></div><div class="form-group"><label>Fecha salida</label><input id="cpDateOut" type="date" value="${today()}"></div></div>
-    <div class="form-row3"><div class="form-group"><label>${p.tbSymbol} salida qty</label><input id="cpExTbQ" type="number" step="any" value="${p.curTbQty||''}"></div><div class="form-group"><label>${p.tbSymbol} precio salida</label><input id="cpExTbP" type="number" step="any" value="${tbPrice||''}"></div><div class="form-group"><label>Fees extra cierre (USD)</label><input id="cpExFees" type="number" step="any" value="0"></div></div>
+  openModal(`<h2>Cerrar posición — ${esc(p.taSymbol)}/${esc(p.tbSymbol)}</h2>
+    <div class="form-row3"><div class="form-group"><label>${esc(p.taSymbol)} salida qty</label><input id="cpExTaQ" type="number" step="any" value="${p.curTaQty||''}"></div><div class="form-group"><label>${esc(p.taSymbol)} precio salida</label><input id="cpExTaP" type="number" step="any" value="${taPrice||''}"></div><div class="form-group"><label>Fecha salida</label><input id="cpDateOut" type="date" value="${today()}"></div></div>
+    <div class="form-row3"><div class="form-group"><label>${esc(p.tbSymbol)} salida qty</label><input id="cpExTbQ" type="number" step="any" value="${p.curTbQty||''}"></div><div class="form-group"><label>${esc(p.tbSymbol)} precio salida</label><input id="cpExTbP" type="number" step="any" value="${tbPrice||''}"></div><div class="form-group"><label>Fees extra cierre (USD)</label><input id="cpExFees" type="number" step="any" value="0"></div></div>
     <div class="hint" style="margin-bottom:12px">Los tokens se devolverán al HODL de la misma wallet.</div>
     <button class="btn btn-warning" onclick="confirmClose('${p.id}')" style="width:100%">Confirmar cierre</button>`);
 }
@@ -1380,12 +1674,12 @@ function confirmClose(pid){
     if(existing){existing.purchases.push({id:uid(),qty,price,date:p.dateOut});recalcAsset(existing);existing.price=price}
     else{const a={id:uid(),wallet:p.wallet,symbol:sym,name:sym,price,purchases:[{id:uid(),qty,price,date:p.dateOut}],qty:0,buyPrice:0};recalcAsset(a);db.assets.push(a)}
   });
-  saveDB(db);closeModal();render();
+  saveDB(db);closeModal();go('detail',{detailId:p.id});
 }
 function confirmDeletePool(pid){
   const p=db.positions.find(x=>x.id===pid);if(!p)return;
   openModal(`<h2 style="color:var(--red)">⚠ Eliminar posición</h2>
-    <p style="margin-bottom:16px;color:var(--tx2)">¿Eliminar <strong>${p.taSymbol}/${p.tbSymbol}</strong> permanentemente? Esta acción no se puede deshacer.</p>
+    <p style="margin-bottom:16px;color:var(--tx2)">¿Eliminar <strong>${esc(p.taSymbol)}/${esc(p.tbSymbol)}</strong> permanentemente? Esta acción no se puede deshacer.</p>
     <div style="display:flex;gap:8px"><button class="btn btn-danger" onclick="doDeletePool('${pid}')" style="flex:1">Sí, eliminar</button><button class="btn btn-secondary" onclick="closeModal()" style="flex:1">Cancelar</button></div>`);
 }
 function doDeletePool(pid){
@@ -1396,7 +1690,7 @@ function doDeletePool(pid){
 function openRewardModal(pid,rid){
   const p=db.positions.find(x=>x.id===pid);if(!p)return;
   const r=rid?(p.rewards||[]).find(x=>x.id===rid):null;
-  openModal(`<h2>${r?'Editar':'Nuevo'} Reward — ${p.taSymbol}/${p.tbSymbol}</h2>
+  openModal(`<h2>${r?'Editar':'Nuevo'} Reward — ${esc(p.taSymbol)}/${esc(p.tbSymbol)}</h2>
     <div class="form-row"><div class="form-group"><label>Importe (USD)</label><input id="rwUsd" type="number" step="any" value="${r?.usd||''}"></div><div class="form-group"><label>Fecha</label><input id="rwDate" type="date" value="${r?.date||today()}"></div></div>
     <div class="form-group"><label>Acción</label><select id="rwState"><option value="pendiente" ${r?.state==='pendiente'?'selected':''}>Pendiente</option><option value="reinvertido" ${r?.state==='reinvertido'?'selected':''}>Reinvertir en la pool</option><option value="retirado" ${r?.state==='retirado'?'selected':''}>Reclamar fuera de la wallet</option></select></div>
     <button class="btn btn-primary" onclick="saveReward('${pid}','${rid||''}')" style="width:100%;margin-top:8px">Guardar</button>`);
@@ -1529,7 +1823,7 @@ function cmcReconstruct(txs,transferMode){
 function openCmcImport(){
   openModal(`<h2>Importar de CoinMarketCap</h2>
     <div class="hint" style="margin-bottom:14px">Sube el archivo <strong>..._transactions.csv</strong> de CoinMarketCap. Reconstruyo tus activos con su historial (compras, ventas y fechas) y fusiono en la wallet que elijas.</div>
-    <div class="form-group"><label>Wallet destino</label><select id="cmcWallet"><option value="wallet1">${WALLETS.wallet1.name}</option><option value="wallet2">${WALLETS.wallet2.name}</option></select></div>
+    <div class="form-group"><label>Wallet destino</label><select id="cmcWallet"><option value="wallet1">${esc(WALLETS.wallet1.name)}</option><option value="wallet2">${esc(WALLETS.wallet2.name)}</option></select></div>
     <div class="form-group"><label>Archivo de transacciones (.csv)</label><input type="file" id="cmcFile" accept=".csv"></div>
     <div class="form-group"><label>Transferencias / airdrops (transferIn)</label><select id="cmcTransfer"><option value="zero">Coste 0 (recomendado)</option><option value="ignore">Ignorarlas</option></select></div>
     <button class="btn btn-primary" onclick="cmcAnalyze()" style="width:100%;margin-top:8px">Analizar archivo</button>`);
@@ -1554,13 +1848,13 @@ function renderCmcPreview(){
   const zero=Object.values(s.assets).filter(a=>!(a.finalQty>1e-9)).length;
   let h=`<h2>Revisar importación</h2>`;
   h+=`<div class="preview-box"><div class="pv-label">Resumen</div><div class="pv-val" style="font-size:.9rem;line-height:1.7">`;
-  h+=`<strong>${items.length}</strong> activos → ${WALLETS[s.wallet].name}<br>`;
+  h+=`<strong>${items.length}</strong> activos → ${esc(WALLETS[s.wallet].name)}<br>`;
   h+=`Compras: ${s.stats.nBuy} · Ventas: ${s.stats.nSell} · Transferencias coste 0: ${s.stats.nTransfer}<br>`;
   if(s.repriced.length)h+=`<span class="pnl-neg">⚠️ ${s.repriced.length} precio(s) corrupto(s) corregido(s) a la mediana</span><br>`;
   if(zero)h+=`<span style="color:var(--tx3)">${zero} moneda(s) con saldo 0 (vendidas) no se añaden</span>`;
   h+=`</div></div>`;
   h+=`<div class="tbl-wrap" style="max-height:260px;overflow-y:auto"><table><thead><tr><th>Token</th><th>Cantidad</th><th>Precio medio</th></tr></thead><tbody>`;
-  items.forEach(a=>{h+=`<tr><td class="asset-sym">${a.symbol}</td><td>${fmtQty(a.finalQty)}</td><td>${fmtPrice(a.avgCost)}</td></tr>`});
+  items.forEach(a=>{h+=`<tr><td class="asset-sym">${esc(a.symbol)}</td><td>${fmtQty(a.finalQty)}</td><td>${fmtPrice(a.avgCost)}</td></tr>`});
   h+=`</tbody></table></div>`;
   if(s.repriced.length)h+=`<div class="hint" style="margin-top:10px">Precios corregidos: ${s.repriced.slice(0,8).map(x=>x.token+' ('+x.date+')').join(', ')}${s.repriced.length>8?'…':''}</div>`;
   h+=`<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-primary" onclick="cmcConfirm()" style="flex:1">Confirmar importación</button><button class="btn btn-secondary" onclick="openCmcImport()" style="flex:1">Volver</button></div>`;
@@ -1583,7 +1877,7 @@ function cmcConfirm(){
 // ===================== INIT =====================
 async function init(){
   // Pinta ya con datos locales (rápido, offline)
-  refreshWallets();render();
+  refreshWallets();syncPrivBtn();render();
   // Comprueba sesión existente
   try{
     const {data}=await sb.auth.getSession();
