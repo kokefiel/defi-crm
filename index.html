@@ -377,6 +377,8 @@ function saveLocal(d){localStorage.setItem(DB_KEY,JSON.stringify(d))}
 // saveDB: guarda local al instante + nube en segundo plano (debounced)
 function saveDB(d){
   saveLocal(d);
+  realSeriesCache=null; // los datos cambiaron: la serie histórica del chart se recalcula
+
   if(cloudReady&&sbUser){
     clearTimeout(saveTimer);
     saveTimer=setTimeout(()=>pushCloud(d),800);
@@ -855,7 +857,7 @@ function renderMiniEvo(){
   [['1m','1m'],['3m','3m'],['1y','1a'],['all','Todo']].forEach(([k,lbl])=>{h+=`<button class="ctab ${range===k?'active':''}" onclick="state.evoRange='${k}';render()">${lbl}</button>`});
   h+=`</div></div>`;
   h+=`<canvas id="miniEvo" style="width:100%;height:230px;display:block"></canvas>`;
-  h+=`<div class="hint" style="margin-top:8px">Verde: valor de mercado (un punto por sincronización ↻) · Gris: dinero invertido. Vista global, todas las wallets al 100%. Detalle en la pestaña Evolución.</div>`;
+  h+=`<div class="hint" style="margin-top:8px">Valor del portfolio en el tiempo, desde tu primera compra (global, todas las wallets al 100%). Detalle en la pestaña Evolución.</div>`;
   h+=`</div>`;
   return h;
 }
@@ -940,7 +942,8 @@ function renderAssetTable(assets,showOrigin){
 
 function drawAllCharts(){
   if(state.subTab==='my'&&document.getElementById('miniEvo')){
-    drawEvoChart(buildCostSeries(),buildValueSeries(),state.evoRange||'all','miniEvo');
+    drawEvoChart(valueSeriesForChart(),state.evoRange||'all','miniEvo');
+    ensureRealSeries();
   }
   const ids=state.subTab==='all'?['chart_all']:['chart_my'];
   ids.forEach(id=>{
@@ -980,13 +983,26 @@ function drawDonut(ctx,data,total,size){
 // ===================== POOLS =====================
 function renderPools(app){
   const f=state.poolFilter;
-  const pools=f==='all'?db.positions:db.positions.filter(p=>p.wallet===f);
+  const st=state.poolStatus||'active';
+  const byWallet=f==='all'?db.positions:db.positions.filter(p=>p.wallet===f);
+  const nAct=byWallet.filter(p=>p.status==='active').length;
+  const nClosed=byWallet.filter(p=>p.status==='closed').length;
+  let pools=byWallet.filter(p=>st==='closed'?p.status==='closed':p.status!=='closed');
+  if(st!=='closed'){
+    // Las activas se ordenan por urgencia: fuera de rango → cerca del borde → en rango
+    const ord={out:0,near:1,in:2,unknown:3};
+    pools=pools.slice().sort((a,b)=>ord[v3RangeInfo(a).status]-ord[v3RangeInfo(b).status]);
+  }
   const cnt=w=>db.positions.filter(p=>w==='all'||p.wallet===w).length;
   let h=`<div class="fade-in"><div class="pool-filters">`;
   h+=`<button class="pill ${f==='all'?'active':''}" onclick="state.poolFilter='all';render()">Todas (${cnt('all')})</button>`;
   ['wallet1','wallet2'].forEach(w=>{
     h+=`<button class="pill ${f===w?'active':''}" onclick="state.poolFilter='${w}';render()">${esc(WALLETS[w].name)} (${cnt(w)})</button>`;
   });
+  h+=`</div>`;
+  h+=`<div class="tabs" style="margin-bottom:16px">`;
+  h+=`<button class="tab ${st!=='closed'?'active':''}" onclick="state.poolStatus='active';render()">🟢 Activas (${nAct})</button>`;
+  h+=`<button class="tab ${st==='closed'?'active':''}" onclick="state.poolStatus='closed';render()">Cerradas (${nClosed})</button>`;
   h+=`</div>`;
   const activeV3=pools.filter(p=>p.status==='active');
   if(activeV3.length){
@@ -1001,7 +1017,10 @@ function renderPools(app){
     h+=`<div class="metric"><div class="label">Rewards pendientes</div><div class="val sm">${fmt(pendingFees)}</div></div>`;
     h+=`</div>`;
   }
-  if(!pools.length){h+=`<div class="empty"><div class="e-icon">🌊</div><div class="e-title">Sin posiciones DeFi</div><div>Pulsa "+ Nueva posición" para empezar</div></div>`}
+  if(!pools.length){
+    if(st==='closed')h+=`<div class="empty"><div class="e-icon">📦</div><div class="e-title">Sin posiciones cerradas</div><div>Cuando cierres una pool, su historial quedará aquí</div></div>`;
+    else h+=`<div class="empty"><div class="e-icon">🌊</div><div class="e-title">Sin posiciones activas</div><div>${nClosed?'Tienes '+nClosed+' en la pestaña Cerradas · ':''}Pulsa "+ Nueva posición" para empezar</div></div>`;
+  }
   else{
     h+=`<div class="pool-list">`;
     pools.forEach(p=>{
@@ -1013,13 +1032,13 @@ function renderPools(app){
       const badge=p.status==='closed'?'<span class="badge badge-closed">Cerrada</span>':hasPending?'<span class="badge badge-rewards">Rewards pendientes</span>':'<span class="badge badge-active">Activa</span>';
       h+=`<div class="pool-card ${statusClass}" onclick="go('detail',{detailId:'${p.id}'})">`;
       h+=`<div class="pool-top"><div><div class="pool-pair">${esc(p.taSymbol)}/${esc(p.tbSymbol)}</div><div class="pool-meta">${esc(p.protocol||'')} · ${esc(p.network||'')}</div></div>`;
-      h+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badge}${v3StatusBadge(p)}<span class="wtag" style="background:${WALLETS[p.wallet]?.color||'#666'}20;color:${WALLETS[p.wallet]?.color||'#666'}">${esc(WALLETS[p.wallet]?.name||p.wallet)}</span></div></div>`;
+      h+=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${badge}${p.status==='closed'?'':v3StatusBadge(p)}<span class="wtag" style="background:${WALLETS[p.wallet]?.color||'#666'}20;color:${WALLETS[p.wallet]?.color||'#666'}">${esc(WALLETS[p.wallet]?.name||p.wallet)}</span></div></div>`;
       h+=`<div class="pool-grid">`;
       h+=`<div class="pool-stat"><div class="ps-label">Capital</div><div class="ps-val">${fmt(cap)}</div></div>`;
       h+=`<div class="pool-stat"><div class="ps-label">${p.status==='closed'?'Val. salida':'Val. actual'}</div><div class="ps-val">${fmt(p.status==='closed'?poolExitVal(p):poolCurrentVal(p))}</div></div>`;
       h+=`<div class="pool-stat"><div class="ps-label">RENDIMIENTO neto</div><div class="ps-val ${pnlClass(pnl)}">${fmt(pnl)}</div></div>`;
       h+=`<div class="pool-stat"><div class="ps-label">ROI</div><div class="ps-val ${pnlClass(roi)}">${fmtPct(roi)}</div></div>`;
-      h+=`</div>${renderV3Mini(p)}</div>`;
+      h+=`</div>${p.status==='closed'?'':renderV3Mini(p)}</div>`;
     });
     h+=`</div>`;
   }
@@ -1041,23 +1060,21 @@ function renderV3Mini(p){
   </div>`;
 }
 
+// Control V3 reducido a lo que ayuda a decidir: ¿estoy en rango?, ¿renta?, ¿hay algo que reclamar?
+// (El fee tier vive en la cabecera; reclamado/reinvertido están en la tabla de rewards.)
 function renderV3Detail(p){
   const i=v3RangeInfo(p),markerCls=i.status==='out'?'out':i.status==='near'?'near':'';
+  const qa=+p.curTaQty||0,qb=+p.curTbQty||0,va=qa*poolTokenPrice(p,'a'),vb=qb*poolTokenPrice(p,'b');
+  const tot=va+vb,pctA=tot?va/tot*100:0;
+  const pend=rewardPending(p);
   return `<div class="detail-section card"><h3>Control V3</h3>
     <div class="v3-detail-grid">
-      <div class="v3-detail-card"><div class="label">Estado</div><div class="val">${i.label}</div></div>
-      <div class="v3-detail-card"><div class="label">Precio actual</div><div class="val">${i.price?fmtP(i.price):'0.00'} ${esc(p.tbSymbol)}/${esc(p.taSymbol)}</div></div>
-      <div class="v3-detail-card"><div class="label">Distancia borde</div><div class="val ${i.status==='out'||i.status==='near'?'pnl-neg':'pnl-pos'}">${i.ready?fmtP(i.distance)+'%':'—'}</div></div>
+      <div class="v3-detail-card"><div class="label">Estado</div><div class="val ${i.status==='out'||i.status==='near'?'pnl-neg':i.status==='in'?'pnl-pos':''}">${i.label}</div><div class="price-sub" style="margin-top:2px">${i.ready?'Borde a '+fmtP(i.distance)+'% (avisa al '+fmtP(i.alert)+'%)':'Configura el rango'}</div></div>
+      <div class="v3-detail-card"><div class="label">Precio actual</div><div class="val">${i.price?fmtP(i.price):'—'} ${esc(p.tbSymbol)}/${esc(p.taSymbol)}</div></div>
       <div class="v3-detail-card"><div class="label">APR rewards</div><div class="val">${fmtP(v3FeeApr(p))}%</div></div>
-      <div class="v3-detail-card"><div class="label">Fee tier</div><div class="val">${p.feeTier?fmtP(+p.feeTier)+'%':'—'}</div></div>
-      <div class="v3-detail-card"><div class="label">Reclamado fuera</div><div class="val">${fmt(rewardClaimed(p))}</div></div>
-      <div class="v3-detail-card"><div class="label">Pendiente</div><div class="val">${fmt(rewardPending(p))}</div></div>
-      <div class="v3-detail-card"><div class="label">Reinvertido</div><div class="val">${fmt(reinvestedRewards(p))}</div></div>
-      <div class="v3-detail-card"><div class="label">${esc(p.taSymbol)} actual</div><div class="val">${fmtQty(+p.curTaQty||0)}</div></div>
-      <div class="v3-detail-card"><div class="label">${esc(p.tbSymbol)} actual</div><div class="val">${fmtQty(+p.curTbQty||0)}</div></div>
-      <div class="v3-detail-card"><div class="label">Precio ${esc(p.taSymbol)}</div><div class="val">${fmtPrice(poolTokenPrice(p,'a'))}</div></div>
-      <div class="v3-detail-card"><div class="label">Precio ${esc(p.tbSymbol)}</div><div class="val">${fmtPrice(poolTokenPrice(p,'b'))}</div></div>
+      <div class="v3-detail-card"><div class="label">Rewards pendientes</div><div class="val ${pend>0?'pnl-pos':''}">${fmt(pend)}</div></div>
     </div>
+    <div class="v3-detail-card" style="margin-bottom:14px"><div class="label">Composición actual</div><div class="val">${fmtQty(qa)} ${esc(p.taSymbol)} (${fmtP(pctA)}%) · ${fmtQty(qb)} ${esc(p.tbSymbol)} (${fmtP(100-pctA)}%)</div></div>
     <div class="v3-range-panel">
       <div class="v3-range-caps"><span>Min ${i.ready?fmtP(i.min):'—'}</span><span>Max ${i.ready?fmtP(i.max):'—'}</span></div>
       <div class="range-line" style="margin-top:10px"><span class="range-marker ${markerCls}" style="left:${i.ready?i.pos:50}%"></span></div>
@@ -1076,7 +1093,7 @@ function renderDetail(app){
 
   let h=`<div class="fade-in"><button class="btn btn-secondary" onclick="go('pools')" style="margin-bottom:16px">← Volver</button>`;
   h+=`<div class="detail-header"><div class="detail-pair">${esc(p.taSymbol)}/${esc(p.tbSymbol)}</div>`;
-  h+=`<div class="detail-meta">${badge}<span>${esc(p.protocol||'')} · ${esc(p.network||'')}</span><span>${days} días</span>`;
+  h+=`<div class="detail-meta">${badge}<span>${esc(p.protocol||'')} · ${esc(p.network||'')}</span>${p.feeTier?`<span>Fee ${fmtP(+p.feeTier)}%</span>`:''}<span>${days} días</span>`;
   h+=`<span class="wtag" style="background:${WALLETS[p.wallet]?.color||'#666'}20;color:${WALLETS[p.wallet]?.color||'#666'}">${esc(WALLETS[p.wallet]?.name||p.wallet)}</span></div></div>`;
 
   // Entrada
@@ -1118,7 +1135,7 @@ function renderDetail(app){
     h+=`<div class="metric"><div class="label">Rewards/fees</div><div class="val sm">${fmt(poolIncome(p))}</div></div>`;
     h+=`<div class="metric"><div class="label">RENDIMIENTO / ROI</div><div class="val sm ${pnlClass(pnl)}">${fmt(pnl)} (${fmtPct(roi)})</div></div></div></div>`;
   }
-  h+=renderV3Detail(p);
+  if(!isClosed)h+=renderV3Detail(p); // en pools cerradas el control V3 ya no aporta: cuentan la salida, el IL y el veredicto
   // Rewards table
   h+=`<div class="detail-section card"><h3>🎁 Rewards reclamados</h3>`;
   if(!(p.rewards||[]).length){h+=`<div style="color:var(--tx3);font-size:.88rem">Sin rewards registrados</div>`}
@@ -1239,6 +1256,94 @@ function buildValueSeries(){
   return pts;
 }
 function evoCutoff(range){const now=Date.now(),d=864e5;if(range==='1m')return now-30*d;if(range==='3m')return now-90*d;if(range==='1y')return now-365*d;return 0}
+
+// ===================== SERIE HISTÓRICA DE VALOR =====================
+// Reconstruye "valor del portfolio en el tiempo" desde la primera compra:
+//  · último año: precios diarios reales de CoinGecko (límite del API gratuito)
+//  · más antiguo: aproximación con tus precios de compra
+const STABLES=['USDC','USDT','DAI','USDS','PYUSD','EURC'];
+const histPriceCache={};
+let realSeriesCache=null,realSeriesLoading=false;
+async function fetchCoinHistory(id){
+  if(histPriceCache[id])return histPriceCache[id];
+  try{
+    const r=await fetch(`https://api.coingecko.com/api/v3/coins/${encodeURIComponent(id)}/market_chart?vs_currency=usd&days=365&interval=daily`);
+    const d=await r.json();
+    const pts=(d.prices||[]).map(p=>({t:p[0],v:p[1]}));
+    if(pts.length){histPriceCache[id]=pts;return pts}
+  }catch(e){}
+  return null;
+}
+function seriesPriceAt(s,t){let v=null;for(let i=0;i<s.length;i++){if(s[i].t<=t)v=s[i].v;else break}return v}
+// Serie inmediata mientras carga el histórico: coste acumulado (proxy del valor en cada compra) + fotos diarias + valor vivo
+function fallbackValueSeries(){
+  const snaps=buildValueSeries();
+  const firstSnap=snaps.length?snaps[0].t:Infinity;
+  return buildCostSeries().filter(p=>p.t<firstSnap).concat(snaps);
+}
+function valueSeriesForChart(){return realSeriesCache||fallbackValueSeries()}
+function ensureRealSeries(){
+  if(realSeriesCache||realSeriesLoading)return;
+  realSeriesLoading=true;
+  buildRealValueSeries().then(s=>{
+    realSeriesLoading=false;
+    if(s&&s.length){
+      realSeriesCache=s;
+      if(document.getElementById('miniEvo'))drawEvoChart(valueSeriesForChart(),state.evoRange||'all','miniEvo');
+      if(document.getElementById('evoChart'))drawEvoChart(valueSeriesForChart(),state.evoRange||'all','evoChart');
+    }
+  }).catch(()=>{realSeriesLoading=false});
+}
+async function buildRealValueSeries(){
+  const need=new Set();
+  db.assets.forEach(a=>{if(a.cgId&&!STABLES.includes(a.symbol))need.add(a.cgId)});
+  db.positions.forEach(p=>{[p.taSymbol,p.tbSymbol].forEach(s=>{const S=(s||'').toUpperCase();if(S&&!STABLES.includes(S)&&CG_MAP[S])need.add(CG_MAP[S])})});
+  const hist={};let ok=0;
+  for(const id of need){const h=await fetchCoinHistory(id);if(h){hist[id]=h;ok++}}
+  if(need.size&&!ok)return null; // API caída o sin cuota: seguimos con el fallback
+  // Primera compra / entrada en pool de todo el historial
+  let firstT=Infinity;
+  db.assets.forEach(a=>(a.purchases||[]).forEach(pu=>{const t=dateMs(pu.date||today());if(t<firstT)firstT=t}));
+  db.positions.forEach(p=>{if(p.dateIn){const t=dateMs(p.dateIn);if(t<firstT)firstT=t}});
+  if(firstT===Infinity)return null;
+  const wstart=Object.keys(hist).length?Math.min(...Object.values(hist).map(s=>s[0].t)):Date.now()-365*864e5;
+  const start=Math.max(wstart,firstT),end=dateMs(today());
+  const pts=[];
+  // Tramo anterior a la ventana de precios: coste acumulado como aproximación del valor
+  if(firstT<start)buildCostSeries().forEach(p=>{if(p.t<start)pts.push({t:p.t,v:p.v})});
+  for(let t=start;t<=end;t+=864e5){
+    let v=0;
+    db.assets.forEach(a=>{
+      let q=0;(a.purchases||[]).forEach(pu=>{if(dateMs(pu.date||today())<=t)q+=(+pu.qty||0)});
+      if(!(q>0))return;
+      let pr=null;
+      if(STABLES.includes(a.symbol))pr=1;
+      else if(a.cgId&&hist[a.cgId])pr=seriesPriceAt(hist[a.cgId],t);
+      if(pr==null){ // sin histórico: último precio de compra conocido hasta esa fecha
+        let last=0;(a.purchases||[]).forEach(pu=>{if(dateMs(pu.date||today())<=t&&+pu.price>0)last=+pu.price});
+        pr=last||a.buyPrice||0;
+      }
+      v+=q*pr;
+    });
+    db.positions.forEach(p=>{
+      if(!p.dateIn||t<dateMs(p.dateIn))return;
+      if(p.status==='closed'&&p.dateOut&&t>=dateMs(p.dateOut))return; // al cerrar, los tokens vuelven al HODL y ya cuentan arriba
+      [[p.taSymbol,+p.curTaQty||+p.taQty||0,+p.taPrice||0],[p.tbSymbol,+p.curTbQty||+p.tbQty||0,+p.tbPrice||0]].forEach(([sym,q,entryPr])=>{
+        const S=(sym||'').toUpperCase();if(!q)return;
+        let pr=null;
+        if(STABLES.includes(S))pr=1;
+        else if(CG_MAP[S]&&hist[CG_MAP[S]])pr=seriesPriceAt(hist[CG_MAP[S]],t);
+        if(pr==null)pr=entryPr;
+        v+=q*pr;
+      });
+    });
+    pts.push({t,v});
+  }
+  // El punto final es el valor vivo de ahora mismo
+  const live=portfolioTotals();
+  if(live.value>0&&pts.length)pts[pts.length-1]={t:end,v:live.value};
+  return pts.filter(p=>p.v>0);
+}
 function renderEvolution(app){
   const t=portfolioTotals(),pnl=t.value-t.cost,range=state.evoRange||'all';
   let h=`<div class="fade-in">`;
@@ -1251,11 +1356,8 @@ function renderEvolution(app){
   [['1m','1 mes'],['3m','3 meses'],['1y','1 año'],['all','Todo']].forEach(([k,lbl])=>{h+=`<button class="pill ${range===k?'active':''}" onclick="state.evoRange='${k}';render()">${lbl}</button>`});
   h+=`</div>`;
   h+=`<div class="card"><div class="card-header">Evolución del portfolio</div>`;
-  h+=`<div style="display:flex;gap:16px;margin-bottom:12px;font-size:.8rem;color:var(--tx2)">`;
-  h+=`<span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:3px;background:var(--grn);border-radius:2px"></span>Valor de mercado</span>`;
-  h+=`<span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:0;border-top:3px dashed var(--tx3)"></span>Invertido (coste)</span></div>`;
   h+=`<div style="position:relative"><canvas id="evoChart" style="width:100%;height:280px;display:block"></canvas></div>`;
-  if((db.snapshots||[]).length<2)h+=`<div class="hint" style="margin-top:12px">La línea de <strong>coste</strong> usa todo tu historial (compras y ventas). La de <strong>valor de mercado</strong> se va dibujando cada vez que pulsas sincronizar (↻); de momento tiene pocos puntos, en unos días tendrás la curva. Más adelante le añadimos el histórico de CoinGecko para rellenar el pasado.</div>`;
+  h+=`<div class="hint" style="margin-top:12px">Valor del portfolio desde tu primera compra. El último año se reconstruye con precios diarios reales de CoinGecko; el tramo más antiguo se aproxima con tus precios de compra (el API gratuito solo da 365 días de histórico).</div>`;
   h+=`</div>`;
   // Benchmark: ¿estás batiendo al mercado?
   h+=`<div class="card" style="margin-top:20px"><div class="card-header">🥊 ¿Estás batiendo al mercado?</div>`;
@@ -1264,14 +1366,14 @@ function renderEvolution(app){
   h+=`</div><div id="benchBox"></div></div>`;
   h+=`</div>`;
   app.innerHTML=h;
-  setTimeout(()=>drawEvoChart(buildCostSeries(),buildValueSeries(),range),60);
+  setTimeout(()=>drawEvoChart(valueSeriesForChart(),range,'evoChart'),60);
+  ensureRealSeries();
   loadBench();
 }
 
 // ===================== BENCHMARK =====================
 // Simula: "si cada aportación tuya se hubiera invertido ese mismo día en X, ¿cuánto tendrías hoy?"
 const BENCHES={bitcoin:{label:'Bitcoin'},ethereum:{label:'Ethereum'},'pax-gold':{label:'Oro (PAXG)'}};
-const benchCache={};
 function investEvents(){
   const evts=[];
   db.assets.forEach(a=>(a.purchases||[]).forEach(p=>{const usd=(+p.qty||0)*(+p.price||0);if(usd)evts.push({date:p.date||today(),usd})}));
@@ -1287,15 +1389,7 @@ async function loadBench(){
   const evts=investEvents();
   if(!evts.length){box.innerHTML='<div class="hint">Añade compras con fecha para poder comparar.</div>';return}
   box.innerHTML='<div class="hint">Cargando datos de mercado…</div>';
-  let prices=benchCache[id];
-  if(!prices){
-    try{
-      const r=await fetch(`https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=365&interval=daily`);
-      const d=await r.json();
-      prices=(d.prices||[]).map(p=>({t:p[0],v:p[1]}));
-      if(prices.length)benchCache[id]=prices;
-    }catch(e){}
-  }
+  const prices=await fetchCoinHistory(id);
   if(!prices||!prices.length){box.innerHTML='<div class="hint">No pude cargar el histórico (límite del API gratuito de CoinGecko). Prueba de nuevo en 1 minuto.</div>';return}
   if(state.view!=='evolution'||(state.benchSel||'bitcoin')!==id)return; // el usuario cambió de vista mientras cargaba
   const priceAt=t=>{
@@ -1324,37 +1418,51 @@ async function loadBench(){
   h+=`<div class="hint" style="margin-top:10px">Simulación: cada aportación tuya (compras y entradas en pools, en su fecha real) invertida en ${lbl} ese mismo día.${clamped?' ⚠ Las aportaciones de hace más de 365 días se valoran al precio más antiguo disponible (límite del API gratuito).':''}</div>`;
   box.innerHTML=h;
 }
-function drawEvoChart(cost,value,range,id){
+// Paso "bonito" para los ticks del eje de dinero (1/2/5 × potencia de 10)
+function niceStep(raw){const p=Math.pow(10,Math.floor(Math.log10(raw||1)));const n=raw/p;return(n<=1?1:n<=2?2:n<=5?5:10)*p}
+const fmtAxis=v=>{if(privacy)return'•••';if(v>=1e6)return'$'+(v/1e6).toFixed(1).replace('.0','')+'M';if(v>=1e3)return'$'+(v/1e3).toFixed(1).replace('.0','')+'k';return'$'+Math.round(v)};
+function drawEvoChart(value,range,id){
   const c=document.getElementById(id||'evoChart');if(!c)return;
   const dpr=window.devicePixelRatio||1,cssW=c.clientWidth||600,cssH=c.clientHeight||280;
   c.width=cssW*dpr;c.height=cssH*dpr;
   const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,cssW,cssH);
   const cut=evoCutoff(range);
-  let fcost=cost.filter(p=>p.t>=cut),fval=value.filter(p=>p.t>=cut);
-  // Para que la línea de coste no empiece en 0 al recortar el rango, anclo el valor previo al borde izquierdo
-  if(cut>0){
-    const prevC=cost.filter(p=>p.t<cut).pop();if(prevC)fcost=[{t:cut,v:prevC.v},...fcost];
-    const prevV=value.filter(p=>p.t<cut).pop();if(prevV&&fval.length)fval=[{t:cut,v:prevV.v},...fval];
-  }
-  const all=[...fcost,...fval];
-  if(!all.length){ctx.fillStyle='#6b6f85';ctx.font='13px sans-serif';ctx.fillText('Sin datos en este rango todavía',16,40);return}
-  let tMin=Math.min(...all.map(p=>p.t)),tMax=Math.max(...all.map(p=>p.t));
+  let fval=value.filter(p=>p.t>=cut);
+  // Ancla el valor previo al borde izquierdo para que la línea no aparezca cortada al recortar el rango
+  if(cut>0){const prevV=value.filter(p=>p.t<cut).pop();if(prevV)fval=[{t:cut,v:prevV.v},...fval]}
+  if(!fval.length){ctx.fillStyle='#6b6f85';ctx.font='13px sans-serif';ctx.fillText('Sin datos en este rango todavía',16,40);return}
+  let tMin=Math.min(...fval.map(p=>p.t)),tMax=Math.max(...fval.map(p=>p.t));
   if(tMin===tMax){tMin-=864e5;tMax+=864e5}
-  const vMax=Math.max(...all.map(p=>p.v),0)*1.1||1,padT=12,padB=10,padX=6,W=cssW,H=cssH;
-  const X=t=>padX+((t-tMin)/(tMax-tMin))*(W-2*padX);
-  const Y=v=>H-padB-(v/vMax)*(H-padT-padB);
-  // línea base
-  ctx.strokeStyle='#ffffff10';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(padX,H-padB);ctx.lineTo(W-padX,H-padB);ctx.stroke();
-  // COSTE (escalonada, discontinua)
-  if(fcost.length){
-    ctx.beginPath();ctx.setLineDash([5,4]);ctx.lineWidth=2;ctx.strokeStyle='#8b90a8';
-    fcost.forEach((p,i)=>{const x=X(p.t),y=Y(p.v);if(i===0)ctx.moveTo(x,y);else{ctx.lineTo(x,Y(fcost[i-1].v));ctx.lineTo(x,y)}});
-    ctx.lineTo(W-padX,Y(fcost[fcost.length-1].v));ctx.stroke();ctx.setLineDash([]);
+  const padT=12,padB=24,padL=8,padR=privacy?34:54,W=cssW,H=cssH;
+  let vTop=Math.max(...fval.map(p=>p.v),0)*1.08||1;
+  const step=niceStep(vTop/4);
+  vTop=Math.ceil(vTop/step)*step;
+  const X=t=>padL+((t-tMin)/(tMax-tMin))*(W-padL-padR);
+  const Y=v=>H-padB-(v/vTop)*(H-padT-padB);
+  // Rejilla horizontal + etiquetas de dinero (a la derecha)
+  ctx.font='11px -apple-system,sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';
+  for(let v=0;v<=vTop+step/2;v+=step){
+    const y=Y(v);
+    ctx.strokeStyle=v===0?'#ffffff18':'#ffffff0c';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.fillStyle='#6b6f85';ctx.fillText(fmtAxis(v),W-padR+6,y);
+  }
+  // Etiquetas de fechas (abajo)
+  const span=(tMax-tMin)/864e5;
+  const nT=cssW<480?3:5;
+  ctx.textBaseline='alphabetic';
+  for(let i=0;i<nT;i++){
+    const t=tMin+(tMax-tMin)*i/(nT-1),d=new Date(t);
+    let lbl;
+    if(span>=300)lbl=d.toLocaleDateString('es',{month:'short'})+" '"+String(d.getFullYear()).slice(2);
+    else lbl=d.toLocaleDateString('es',{day:'numeric',month:'short'});
+    ctx.textAlign=i===0?'left':i===nT-1?'right':'center';
+    ctx.fillStyle='#6b6f85';ctx.fillText(lbl,X(t),H-6);
   }
   // VALOR (línea + área)
   if(fval.length===1){
     ctx.fillStyle='#22c55e';ctx.beginPath();ctx.arc(X(fval[0].t),Y(fval[0].v),3.5,0,7);ctx.fill();
-  }else if(fval.length>1){
+  }else{
     ctx.beginPath();ctx.lineWidth=2.6;ctx.strokeStyle='#22c55e';
     fval.forEach((p,i)=>{const x=X(p.t),y=Y(p.v);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
     ctx.stroke();
