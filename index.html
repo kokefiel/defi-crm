@@ -2,7 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08080d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>CRM Crypto</title>
 <style>
 :root{
@@ -64,11 +67,10 @@ select option{background:var(--bg2)}
 .tab.active{background:var(--bg);color:var(--tx);box-shadow:0 2px 8px #0003}
 
 /* WALLET SELECTOR */
-.wallet-sel{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.wallet-sel{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-bottom:20px}
 .wallet-card{padding:16px;border-radius:var(--r2);border:2px solid var(--brd);background:var(--card);cursor:pointer;transition:all .2s}
 .wallet-card:hover{border-color:var(--tx3)}
-.wallet-card.sel{border-color:var(--w1);background:#378ADD10}
-.wallet-card.sel.w2{border-color:var(--w2);background:#BA751710}
+.wallet-card.sel{border-color:var(--acc)}
 .wallet-card .wname{font-weight:600;font-size:.95rem;margin-bottom:2px}
 .wallet-card .wtype{font-size:.78rem;color:var(--tx3)}
 .wallet-card .wval{font-size:1.2rem;font-weight:700;margin-top:6px}
@@ -119,6 +121,16 @@ select option{background:var(--bg2)}
 .wcs-v{font-size:.95rem;font-weight:600;white-space:nowrap}
 .wcs-pct{font-size:.78rem;color:var(--tx3);font-weight:500}
 @media(max-width:560px){.wallet-card{flex-direction:column}.wc-right{width:100%}}
+/* Desglose de "Mi portfolio" por wallet (chips) */
+.wchips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:20px}
+.wchips-label{font-size:.76rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-right:2px}
+.wchip{display:flex;align-items:center;gap:7px;padding:7px 13px;background:var(--card);border:1px solid var(--brd);border-radius:20px;font-size:.82rem;color:var(--tx2)}
+.wchip .legend-dot{width:9px;height:9px}
+.wchip b{color:var(--tx);font-weight:700}
+.wchip .wchip-note{color:var(--tx3);font-size:.72rem}
+/* Filas de wallets en Configuración */
+.cfg-wrow{display:grid;grid-template-columns:1fr 86px 34px;gap:8px;align-items:center;margin-bottom:8px}
+.cfg-whead{display:grid;grid-template-columns:1fr 86px 34px;gap:8px;font-size:.72rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
 .defi-card{margin-top:20px}
 .defi-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
 .defi-head h3{font-size:.95rem;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
@@ -296,20 +308,24 @@ tr:hover{background:var(--bg4)20}
 .nav .nav-btn,.nav .nav-sep,.nav #btnAdd{display:none}
 .nav-brand{font-weight:700;font-size:1rem;letter-spacing:.02em;color:var(--tx)}
 /* Escritorio: dock flotante centrado */
-.botnav{display:flex;position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:120;height:72px;gap:6px;padding:8px 14px;background:var(--bg2);border:1px solid var(--brd2);border-radius:24px;box-shadow:0 12px 40px #0008;backdrop-filter:blur(20px);align-items:center}
-.botnav-btn{display:flex;align-items:center;justify-content:center;text-align:center;min-width:104px;padding:0 22px;height:100%;background:transparent;color:var(--tx3);font-size:.95rem;font-weight:600;letter-spacing:.01em;border-radius:16px}
+.botnav{display:flex;position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:120;gap:6px;padding:8px 14px;background:var(--bg2);border:1px solid var(--brd2);border-radius:24px;box-shadow:0 12px 40px #0008;backdrop-filter:blur(20px);align-items:center}
+.botnav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:92px;padding:8px 16px;background:transparent;color:var(--tx3);font-size:.78rem;font-weight:600;letter-spacing:.01em;border-radius:16px;-webkit-tap-highlight-color:transparent}
+.botnav-btn svg{width:22px;height:22px;flex-shrink:0}
 .botnav-btn:hover{color:var(--tx);background:var(--bg4)}
 .botnav-btn.active{color:var(--acc)}
-.botnav-fab{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:1.9rem;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px #4f8cff66;transform:translateY(-8px)}
+.botnav-fab{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-size:1.9rem;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px #4f8cff66;transform:translateY(-8px);flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .botnav-fab:hover{filter:brightness(1.12)}
 .botnav-fab:active{transform:translateY(-8px) scale(.94)}
-.main{padding-bottom:120px}
-/* Móvil: barra completa pegada abajo */
+.main{padding-bottom:130px}
+/* Móvil: barra completa abajo, elevada sobre la barra de gestos del iPhone (safe area) */
 @media(max-width:768px){
-.botnav{left:0;right:0;transform:none;bottom:0;height:62px;gap:0;padding:0 2px env(safe-area-inset-bottom,0);border:none;border-top:1px solid var(--brd2);border-radius:0;box-shadow:0 -4px 20px #0006;justify-content:space-around}
-.botnav-btn{flex:1;min-width:0;padding:0;font-size:.74rem;border-radius:0}
-.botnav-fab{transform:translateY(-8px)}
+.botnav{left:0;right:0;transform:none;bottom:0;height:auto;gap:0;padding:6px 2px max(env(safe-area-inset-bottom,0px),10px);border:none;border-top:1px solid var(--brd2);border-radius:0;box-shadow:0 -4px 20px #0006;justify-content:space-around}
+.botnav-btn{flex:1;min-width:0;padding:6px 0 4px;font-size:.66rem;border-radius:10px}
+.botnav-btn svg{width:21px;height:21px}
+.botnav-fab{width:54px;height:54px;transform:translateY(-10px)}
+.botnav-fab:active{transform:translateY(-10px) scale(.94)}
 .nav-brand{font-size:.92rem}
+.main{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 }
 
 /* ANIMATIONS */
@@ -356,11 +372,11 @@ tr:hover{background:var(--bg4)20}
   </div>
 </nav>
 <nav class="botnav" id="botnav">
-  <button class="botnav-btn active" data-view="portfolio" onclick="go('portfolio')">Portfolio</button>
-  <button class="botnav-btn" data-view="pools" onclick="go('pools')">Pools</button>
+  <button class="botnav-btn active" data-view="portfolio" onclick="go('portfolio')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg><span>Portfolio</span></button>
+  <button class="botnav-btn" data-view="pools" onclick="go('pools')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8.5c1.7-1.6 3.3-1.6 5 0s3.3 1.6 5 0 3.3-1.6 5 0 3.3 1.6 5 0"/><path d="M2 15.5c1.7-1.6 3.3-1.6 5 0s3.3 1.6 5 0 3.3-1.6 5 0 3.3 1.6 5 0"/></svg><span>Pools</span></button>
   <button class="botnav-fab" onclick="onAdd()" title="Añadir">+</button>
-  <button class="botnav-btn" data-view="evolution" onclick="go('evolution')">Evolución</button>
-  <button class="botnav-btn" data-view="summary" onclick="go('summary')">Resumen</button>
+  <button class="botnav-btn" data-view="evolution" onclick="go('evolution')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span>Evolución</span></button>
+  <button class="botnav-btn" data-view="summary" onclick="go('summary')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3" y2="6"/><line x1="3" y1="12" x2="3" y2="12"/><line x1="3" y1="18" x2="3" y2="18"/></svg><span>Resumen</span></button>
 </nav>
 <div class="main" id="app"></div>
 
@@ -407,7 +423,7 @@ async function pullCloud(){
     return {ok:true,data:data?data.data:null};
   }catch(e){console.warn('Cloud load failed',e);return {ok:false,data:null}}
 }
-function defaultDB(){return{config:{wallet1Name:'Wallet 1',wallet2Name:'Wallet 2 (compartida)'},assets:[],positions:[],snapshots:[],lastSync:0}}
+function defaultDB(){return{config:{wallets:[{id:'wallet1',name:'Mi wallet',color:'#378ADD',type:'Personal',ownPct:100}]},assets:[],positions:[],snapshots:[],lastSync:0}}
 function dbIsEmpty(d){return !d||((!d.assets||!d.assets.length)&&(!d.positions||!d.positions.length))}
 let db=loadDB();
 
@@ -470,13 +486,34 @@ async function onLoggedIn(user){
 }
 
 // ===================== WALLETS =====================
+// Las wallets viven en db.config.wallets: [{id,name,color,type,ownPct}].
+// ownPct = % de esa wallet que es tuyo; "Mi portfolio" consolida cada wallet por ese %.
 let WALLETS={};
-function refreshWallets(){
-  WALLETS={
-    wallet1:{id:'wallet1',name:db.config.wallet1Name||'Wallet 1',color:'#378ADD',type:'Personal'},
-    wallet2:{id:'wallet2',name:db.config.wallet2Name||'Wallet 2 (compartida)',color:'#BA7517',type:'Compartida'}
-  };
+const WALLET_COLORS=['#378ADD','#BA7517','#22c55e','#a855f7','#ec4899','#06b6d4','#eab308','#ef4444','#8b5cf6','#14b8a6'];
+function nextWalletColor(){
+  const used=new Set((db.config.wallets||[]).filter(Boolean).map(w=>w.color));
+  return WALLET_COLORS.find(c=>!used.has(c))||WALLET_COLORS[(db.config.wallets||[]).length%WALLET_COLORS.length];
 }
+function refreshWallets(){
+  if(!db.config)db.config={};
+  if(!Array.isArray(db.config.wallets)||!db.config.wallets.length){
+    // Migración desde la versión antigua de 2 wallets fijas (wallet1Name/wallet2Name)
+    const ws=[{id:'wallet1',name:db.config.wallet1Name||'Wallet 1',color:'#378ADD',type:'Personal',ownPct:100}];
+    const hasW2=!!db.config.wallet2Name||(db.assets||[]).some(a=>a.wallet==='wallet2')||(db.positions||[]).some(p=>p.wallet==='wallet2');
+    if(hasW2)ws.push({id:'wallet2',name:db.config.wallet2Name||'Wallet 2 (compartida)',color:'#BA7517',type:'Compartida',ownPct:50});
+    db.config.wallets=ws;
+  }
+  db.config.wallets=db.config.wallets.filter(Boolean);
+  // Wallets referenciadas por activos/pools (p.ej. datos importados) sin ficha: se crean para no perder nada
+  const ids=new Set(db.config.wallets.map(w=>w.id));
+  (db.assets||[]).concat(db.positions||[]).forEach(x=>{
+    if(x.wallet&&!ids.has(x.wallet)){ids.add(x.wallet);db.config.wallets.push({id:x.wallet,name:x.wallet,color:nextWalletColor(),ownPct:100})}
+  });
+  WALLETS={};
+  db.config.wallets.forEach(w=>{if(w.ownPct==null)w.ownPct=100;WALLETS[w.id]=w});
+}
+const walletMult=wid=>((WALLETS[wid]?.ownPct??100)/100);
+function walletOptionsHtml(sel){return Object.values(WALLETS).map(w=>`<option value="${esc(w.id)}" ${w.id===sel?'selected':''}>${esc(w.name)}</option>`).join('')}
 refreshWallets();
 
 // ===================== STATE =====================
@@ -496,7 +533,7 @@ const fmt=n=>{if(privacy)return'$•••••';if(n==null||isNaN(n))return'$0
 const fmtP=n=>{if(n==null||isNaN(n))return'0.00';return n.toFixed(2)};
 const fmtPct=n=>(n>=0?'+':'')+fmtP(n)+'%';
 const fmtQty=n=>{if(privacy)return'•••';if(n==null)return'0';if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return n.toLocaleString('en',{maximumFractionDigits:4});if(n>=1)return n.toFixed(4);return n.toFixed(6)};
-const fmtPrice=n=>{if(n>=100)return'$'+n.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});if(n>=1)return'$'+n.toFixed(4);return'$'+n.toFixed(6)};
+const fmtPrice=n=>{n=+n;if(n==null||isNaN(n))n=0;if(n>=100)return'$'+n.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});if(n>=1)return'$'+n.toFixed(4);return'$'+n.toFixed(6)};
 const pnlClass=n=>n>=0?'pnl-pos':'pnl-neg';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const daysBetween=(a,b)=>Math.max(1,Math.round((new Date(b)-new Date(a))/864e5));
@@ -789,12 +826,16 @@ function renderPortfolio(app){
 }
 
 function renderAllWallets(){
-  const w=state.selWallet;const wd=WALLETS[w];
-  const w1t=walletHodl('wallet1')+walletDefi('wallet1');
-  const w2t=walletHodl('wallet2')+walletDefi('wallet2');
+  const wids=Object.keys(WALLETS);
+  if(!wids.includes(state.selWallet))state.selWallet=wids[0];
+  const w=state.selWallet;
   let h=`<div class="wallet-sel">`;
-  h+=`<div class="wallet-card ${w==='wallet1'?'sel':''}" onclick="state.selWallet='wallet1';render()"><div class="wc-left"><div class="wname">${esc(WALLETS.wallet1.name)}</div><div class="wtype">${WALLETS.wallet1.type}</div><div class="wval">${fmt(w1t)}</div>${walletPnlHtml('wallet1')}</div>${walletSplitHtml('wallet1')}</div>`;
-  h+=`<div class="wallet-card ${w==='wallet2'?'sel w2':''}" onclick="state.selWallet='wallet2';render()"><div class="wc-left"><div class="wname">${esc(WALLETS.wallet2.name)}</div><div class="wtype">${WALLETS.wallet2.type}</div><div class="wval">${fmt(w2t)}</div>${walletPnlHtml('wallet2')}</div>${walletSplitHtml('wallet2')}</div>`;
+  wids.forEach(wid=>{
+    const wd=WALLETS[wid];const tot=walletHodl(wid)+walletDefi(wid);
+    const sel=wid===w;
+    const sub=wd.ownPct<100?`Compartida · ${wd.ownPct}% tuyo`:(wd.type||'Personal');
+    h+=`<div class="wallet-card ${sel?'sel':''}" style="${sel?`border-color:${wd.color};background:${wd.color}10`:''}" onclick="state.selWallet='${esc(wid)}';render()"><div class="wc-left"><div class="wname">${esc(wd.name)}</div><div class="wtype">${esc(sub)}</div><div class="wval">${fmt(tot)}</div>${walletPnlHtml(wid)}</div>${walletSplitHtml(wid)}</div>`;
+  });
   h+=`</div>`;
   const assets=getWalletAssets(w).slice().sort((a,b)=>(b.qty*b.price)-(a.qty*a.price));
   const hodl=assets.reduce((s,a)=>s+assetVal(a),0);
@@ -823,27 +864,26 @@ function renderWalletEvo(wid){
 }
 
 function renderMyPortfolio(){
-  // Consolidate: wallet1 100%, wallet2 50%
+  // Consolida todas las wallets: cada una cuenta por su "% tuyo" (ownPct)
   const map={};
   db.assets.forEach(a=>{
-    const mult=a.wallet==='wallet1'?1:0.5;
+    const mult=walletMult(a.wallet);
+    if(!(mult>0))return;
     const k=a.symbol;
-    if(!map[k])map[k]={symbol:a.symbol,name:a.name,price:a.price,img:a.img,chg24:a.chg24,chg7d:a.chg7d,qty:0,totalCost:0,wallet:'mixed',purchases:[],origins:[]};
+    if(!map[k])map[k]={symbol:a.symbol,name:a.name,price:a.price,img:a.img,chg24:a.chg24,chg7d:a.chg7d,qty:0,totalCost:0,wallet:'mixed',purchases:[]};
     if(!map[k].img&&a.img)map[k].img=a.img;
     map[k].qty+=a.qty*mult;
     map[k].totalCost+=(a.qty*a.buyPrice)*mult;
-    map[k].origins.push({wallet:a.wallet,pct:mult*100});
   });
   const assets=Object.values(map).map(a=>{a.buyPrice=a.qty>0?a.totalCost/a.qty:0;return a}).sort((a,b)=>(b.qty*b.price)-(a.qty*a.price));
   const hodl=assets.reduce((s,a)=>s+a.qty*a.price,0);
-  const defiAll=db.positions.filter(p=>p.status==='active').reduce((s,p)=>{
-    const m=p.wallet==='wallet1'?1:0.5;return s+poolCurrentVal(p)*m},0);
+  const defiAll=db.positions.filter(p=>p.status==='active').reduce((s,p)=>s+poolCurrentVal(p)*walletMult(p.wallet),0);
   const total=hodl+defiAll;
   const pnlHodl=assets.reduce((s,a)=>s+(a.buyPrice>0?(a.price-a.buyPrice)*a.qty:0),0);
-  const pnlDefi=db.positions.reduce((s,p)=>{const m=p.wallet==='wallet1'?1:0.5;return s+poolPnl(p)*m},0);
+  const pnlDefi=db.positions.reduce((s,p)=>s+poolPnl(p)*walletMult(p.wallet),0);
   // Invertido (mi parte): coste HODL consolidado + capital DeFi activo
   const costHodl=assets.reduce((s,a)=>s+(a.totalCost||0),0);
-  const costDefi=db.positions.filter(p=>p.status==='active').reduce((s,p)=>{const m=p.wallet==='wallet1'?1:0.5;return s+poolCap(p)*m},0);
+  const costDefi=db.positions.filter(p=>p.status==='active').reduce((s,p)=>s+poolCap(p)*walletMult(p.wallet),0);
   const invested=costHodl+costDefi;
   const pnlTotal=pnlHodl+pnlDefi;
   // Cambio 24h en $ reconstruido desde la variación de cada activo (HODL con dato de CoinGecko)
@@ -865,6 +905,15 @@ function renderMyPortfolio(){
   }else h+=`<div class="val sm" style="color:var(--tx3)">—</div>`;
   if(topH)h+=`<div class="sub">🏆 Histórico: ${esc(topH.sym)} ${fmtPct(topH.roi)} desde compra</div>`;
   h+=`</div></div>`;
+  // Desglose: qué parte de "Mi portfolio" aporta cada wallet (sustituye a la antigua columna "Origen")
+  const parts=Object.values(WALLETS).map(w=>({w,val:(walletHodl(w.id)+walletDefi(w.id))*walletMult(w.id)})).filter(x=>x.val>0).sort((a,b)=>b.val-a.val);
+  if(parts.length>1&&total>0){
+    h+=`<div class="wchips"><span class="wchips-label">Formado por</span>`;
+    parts.forEach(x=>{
+      h+=`<span class="wchip"><span class="legend-dot" style="background:${x.w.color}"></span>${esc(x.w.name)} <b>${fmtP(x.val/total*100)}%</b>${x.w.ownPct<100?`<span class="wchip-note">(${x.w.ownPct}% tuyo)</span>`:''}</span>`;
+    });
+    h+=`</div>`;
+  }
   // Quesito + gráfica lado a lado (como CoinGecko)
   h+=`<div class="panels">`;
   h+=renderPanels(assets,total,hodl,defiAll,'chart_my');
@@ -940,9 +989,9 @@ function chgCell(v){
   if(v==null||isNaN(v))return`<td style="color:var(--tx3)">—</td>`;
   return`<td class="${pnlClass(v)}">${fmtPct(v)}</td>`;
 }
-function renderAssetTable(assets,showOrigin){
+function renderAssetTable(assets,consolidated){
   if(!assets.length)return`<div class="empty"><div class="e-icon">📂</div><div class="e-title">Sin activos</div><div>Pulsa "+ Activo" para empezar</div></div>`;
-  let h=`<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Activo</th><th>Cantidad</th><th>Precio</th><th>Valor</th><th>24h</th><th>7d</th><th>RENDIMIENTO HODL</th>${showOrigin?'<th>Origen</th>':''}<th>Acciones</th></tr></thead><tbody>`;
+  let h=`<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Activo</th><th>Cantidad</th><th>Precio</th><th>Valor</th><th>24h</th><th>7d</th><th>RENDIMIENTO HODL</th>${consolidated?'':'<th>Acciones</th>'}</tr></thead><tbody>`;
   assets.forEach((a,i)=>{
     const v=assetVal(a);const cost=a.qty*a.buyPrice;const pnl=(a.price-a.buyPrice)*a.qty;const roi=cost?(pnl/cost*100):0;
     const hasCost=a.buyPrice>0&&a.qty>0;
@@ -954,10 +1003,10 @@ function renderAssetTable(assets,showOrigin){
     h+=chgCell(a.chg24)+chgCell(a.chg7d);
     if(hasCost)h+=`<td class="${pnlClass(pnl)}">${fmt(pnl)}<div class="price-sub">${fmtPct(roi)}</div></td>`;
     else h+=`<td style="color:var(--tx3)">—<div class="price-sub">Sin coste registrado</div></td>`;
-    if(showOrigin&&a.origins){h+=`<td>${a.origins.map(o=>`<span class="wtag" style="background:${WALLETS[o.wallet].color}20;color:${WALLETS[o.wallet].color}">${esc(WALLETS[o.wallet].name)} ${o.pct}%</span>`).join(' ')}</td>`}
-    if(!showOrigin&&a.id){
-      h+=`<td><div class="actions"><button class="act-btn" onclick="openPurchaseModal('${a.id}')" title="Compra / venta">+</button><button class="act-btn" onclick="openSwapModal('${a.id}')" title="Intercambiar (swap)">⇄</button><button class="act-btn" onclick="openEditAsset('${a.id}')" title="Editar">✎</button><button class="act-btn del" onclick="deleteAsset('${a.id}')" title="Eliminar">✕</button></div></td>`;
-    }else{h+=`<td></td>`}
+    if(!consolidated){
+      if(a.id)h+=`<td><div class="actions"><button class="act-btn" onclick="openPurchaseModal('${a.id}')" title="Compra / venta">+</button><button class="act-btn" onclick="openSwapModal('${a.id}')" title="Intercambiar (swap)">⇄</button><button class="act-btn" onclick="openEditAsset('${a.id}')" title="Editar">✎</button><button class="act-btn del" onclick="deleteAsset('${a.id}')" title="Eliminar">✕</button></div></td>`;
+      else h+=`<td></td>`;
+    }
     h+=`</tr>`;
   });
   h+=`</tbody></table></div></div>`;
@@ -984,7 +1033,7 @@ function drawAllCharts(){
 }
 function getConsolidatedAssets(){
   const map={};
-  db.assets.forEach(a=>{const m=a.wallet==='wallet1'?1:0.5;const k=a.symbol;if(!map[k])map[k]={symbol:a.symbol,name:a.name,price:a.price,qty:0,totalCost:0};map[k].qty+=a.qty*m;map[k].totalCost+=(a.qty*a.buyPrice)*m});
+  db.assets.forEach(a=>{const m=walletMult(a.wallet);if(!(m>0))return;const k=a.symbol;if(!map[k])map[k]={symbol:a.symbol,name:a.name,price:a.price,qty:0,totalCost:0};map[k].qty+=a.qty*m;map[k].totalCost+=(a.qty*a.buyPrice)*m});
   return Object.values(map).map(a=>{a.buyPrice=a.qty>0?a.totalCost/a.qty:0;return a});
 }
 function drawDonut(ctx,data,total,size){
@@ -1010,6 +1059,7 @@ function drawDonut(ctx,data,total,size){
 
 // ===================== POOLS =====================
 function renderPools(app){
+  if(state.poolFilter!=='all'&&!WALLETS[state.poolFilter])state.poolFilter='all';
   const f=state.poolFilter;
   const st=state.poolStatus||'active';
   const byWallet=f==='all'?db.positions:db.positions.filter(p=>p.wallet===f);
@@ -1024,8 +1074,8 @@ function renderPools(app){
   const cnt=w=>db.positions.filter(p=>w==='all'||p.wallet===w).length;
   let h=`<div class="fade-in"><div class="pool-filters">`;
   h+=`<button class="pill ${f==='all'?'active':''}" onclick="state.poolFilter='all';render()">Todas (${cnt('all')})</button>`;
-  ['wallet1','wallet2'].forEach(w=>{
-    h+=`<button class="pill ${f===w?'active':''}" onclick="state.poolFilter='${w}';render()">${esc(WALLETS[w].name)} (${cnt(w)})</button>`;
+  Object.keys(WALLETS).forEach(w=>{
+    h+=`<button class="pill ${f===w?'active':''}" onclick="state.poolFilter='${esc(w)}';render()">${esc(WALLETS[w].name)} (${cnt(w)})</button>`;
   });
   h+=`</div>`;
   h+=`<div class="tabs" style="margin-bottom:16px">`;
@@ -1195,8 +1245,9 @@ function renderDetail(app){
 
 // ===================== SUMMARY =====================
 function renderSummary(app){
-  const totalHodl=walletHodl('wallet1')+walletHodl('wallet2');
-  const totalDefi=walletDefi('wallet1')+walletDefi('wallet2');
+  const wids=Object.keys(WALLETS);
+  const totalHodl=wids.reduce((s,w)=>s+walletHodl(w),0);
+  const totalDefi=wids.reduce((s,w)=>s+walletDefi(w),0);
   const total=totalHodl+totalDefi;
   const plusvalia=db.assets.reduce((s,a)=>s+assetPnl(a),0);
   const totalRew=db.positions.reduce((s,p)=>s+poolIncome(p),0);
@@ -1205,11 +1256,12 @@ function renderSummary(app){
   h+=`<div class="metric"><div class="label">Plusvalía</div><div class="val ${pnlClass(plusvalia)}">${fmt(plusvalia)}</div><div class="sub">Revalorización vs precio medio</div></div>`;
   h+=`<div class="metric"><div class="label">Rewards/fees totales</div><div class="val pnl-pos">${fmt(totalRew)}</div><div class="sub">Todas las pools</div></div></div>`;
   h+=`<div class="summary-grid">`;
-  ['wallet1','wallet2'].forEach(wid=>{
+  wids.forEach(wid=>{
     const w=WALLETS[wid];const h1=walletHodl(wid);const d1=walletDefi(wid);const rew=walletRewards(wid);
     const activeP=db.positions.filter(p=>p.wallet===wid&&p.status==='active').length;
     const roiW=(h1+d1)>0?((db.assets.filter(a=>a.wallet===wid).reduce((s,a)=>s+assetPnl(a),0))/(h1||1)*100):0;
-    h+=`<div class="summary-wallet"><h3><div style="width:12px;height:12px;border-radius:4px;background:${w.color}"></div>${esc(w.name)}<span style="font-size:.78rem;color:var(--tx3);font-weight:400;margin-left:4px">${w.type}</span></h3>`;
+    const sub=w.ownPct<100?`Compartida · ${w.ownPct}% tuyo`:(w.type||'');
+    h+=`<div class="summary-wallet"><h3><div style="width:12px;height:12px;border-radius:4px;background:${w.color}"></div>${esc(w.name)}<span style="font-size:.78rem;color:var(--tx3);font-weight:400;margin-left:4px">${esc(sub)}</span></h3>`;
     h+=`<div class="sw-row"><span class="swl">HODL</span><span>${fmt(h1)}</span></div>`;
     h+=`<div class="sw-row"><span class="swl">DeFi</span><span>${fmt(d1)}</span></div>`;
     h+=`<div class="sw-row"><span class="swl">Rewards</span><span>${fmt(rew)}</span></div>`;
@@ -1301,7 +1353,9 @@ let realSeriesCache={},realSeriesLoading={};
 async function fetchCoinHistory(id){
   if(histPriceCache[id])return histPriceCache[id];
   try{
-    const r=await fetch(`https://api.coingecko.com/api/v3/coins/${encodeURIComponent(id)}/market_chart?vs_currency=usd&days=365&interval=daily`);
+    // OJO: sin "&interval=daily" — ese parámetro es solo de planes de pago en CoinGecko y hace
+    // fallar la petición en el plan gratuito (con days=365 la granularidad diaria ya es automática).
+    const r=await fetch(`https://api.coingecko.com/api/v3/coins/${encodeURIComponent(id)}/market_chart?vs_currency=usd&days=365`);
     const d=await r.json();
     const pts=(d.prices||[]).map(p=>({t:p[0],v:p[1]}));
     if(pts.length){histPriceCache[id]=pts;return pts}
@@ -1341,7 +1395,8 @@ function ensureRealSeries(wid){
     if(s&&s.length){
       realSeriesCache[key]=s;
       if(wid){
-        if(document.getElementById('walletEvo'))drawEvoChart(valueSeriesForChart(wid),state.walletEvoRange||'all','walletEvo');
+        // Solo repintar si el usuario sigue mirando ESA wallet (evita pintar la serie de otra wallet en el canvas)
+        if(state.selWallet===wid&&document.getElementById('walletEvo'))drawEvoChart(valueSeriesForChart(wid),state.walletEvoRange||'all','walletEvo');
       }else{
         if(document.getElementById('miniEvo'))drawEvoChart(valueSeriesForChart(),state.evoRange||'all','miniEvo');
         if(document.getElementById('evoChart'))drawEvoChart(valueSeriesForChart(),state.evoRange||'all','evoChart');
@@ -1619,17 +1674,51 @@ function drawEvoChart(value,range,id){
 function openModal(html){$('#modalContent').innerHTML=html;$('#modalOverlay').classList.add('open')}
 function closeModal(){$('#modalOverlay').classList.remove('open')}
 
-// Config
+// Config: gestión de wallets (añadir, renombrar, % de propiedad, eliminar)
 function openConfig(){
+  const ws=db.config.wallets;
+  let rows=ws.map((w,i)=>`<div class="cfg-wrow">
+      <input id="cfgWName${i}" value="${esc(w.name)}" placeholder="Nombre de la wallet">
+      <input id="cfgWPct${i}" type="number" min="1" max="100" step="1" value="${w.ownPct??100}">
+      <button class="act-btn del" onclick="cfgDeleteWallet(${i})" title="Eliminar wallet" ${ws.length<=1?'disabled style="opacity:.3;cursor:not-allowed"':''}>✕</button>
+    </div>`).join('');
   openModal(`<h2>⚙ Configuración</h2>
-    <div class="form-group"><label>Nombre Wallet 1</label><input id="cfgW1" value="${esc(db.config.wallet1Name||'Wallet 1')}"></div>
-    <div class="form-group"><label>Nombre Wallet 2</label><input id="cfgW2" value="${esc(db.config.wallet2Name||'Wallet 2 (compartida)')}"></div>
+    <div class="cfg-whead"><span>Wallet</span><span>% tuyo</span><span></span></div>
+    ${rows}
+    <div class="hint" style="margin:4px 0 14px">"% tuyo" = parte de esa wallet que te pertenece. En "Mi portfolio" cada wallet cuenta solo por ese porcentaje (ej. una wallet compartida a medias → 50).</div>
+    <button class="btn btn-secondary" onclick="cfgAddWallet()" style="width:100%">+ Añadir wallet</button>
     <button class="btn btn-primary" onclick="saveConfig()" style="width:100%;margin-top:8px">Guardar</button>`);
 }
+// Vuelca lo escrito en el modal a db.config.wallets (sin guardar aún)
+function cfgCollect(){
+  db.config.wallets.forEach((w,i)=>{
+    const n=$('#cfgWName'+i),p=$('#cfgWPct'+i);
+    if(n&&n.value.trim())w.name=n.value.trim();
+    if(p){let v=Math.round(+p.value);if(!(v>0))v=w.ownPct??100;w.ownPct=Math.min(100,Math.max(1,v))}
+  });
+}
+function cfgAddWallet(){
+  cfgCollect();
+  db.config.wallets.push({id:'w'+uid(),name:'Wallet '+(db.config.wallets.length+1),color:nextWalletColor(),ownPct:100});
+  refreshWallets();openConfig();
+}
+function cfgDeleteWallet(i){
+  cfgCollect();
+  const w=db.config.wallets[i];if(!w)return;
+  if(db.config.wallets.length<=1){alert('Necesitas al menos una wallet.');return}
+  const nA=db.assets.filter(a=>a.wallet===w.id).length;
+  const nP=db.positions.filter(p=>p.wallet===w.id).length;
+  if(nA||nP){alert(`"${w.name}" tiene ${nA} activo(s) y ${nP} posición(es) DeFi. Muévelos a otra wallet (✎ Editar) o elimínalos antes de borrarla.`);return}
+  if(!confirm(`¿Eliminar la wallet "${w.name}"?`))return;
+  db.config.wallets.splice(i,1);
+  refreshWallets();saveDB(db);openConfig();render();
+}
 function saveConfig(){
-  db.config.wallet1Name=$('#cfgW1').value||'Wallet 1';
-  db.config.wallet2Name=$('#cfgW2').value||'Wallet 2 (compartida)';
-  saveDB(db);refreshWallets();closeModal();render();
+  cfgCollect();
+  // Compatibilidad con versiones antiguas de la app (leían wallet1Name/wallet2Name)
+  if(db.config.wallets[0])db.config.wallet1Name=db.config.wallets[0].name;
+  if(db.config.wallets[1])db.config.wallet2Name=db.config.wallets[1].name;
+  refreshWallets();saveDB(db);closeModal();render();
 }
 
 // Asset selector
@@ -1655,7 +1744,7 @@ let naTimer=null;
 function openNewAssetModal(){
   window.__naCg=null;window.__naResults=[];
   openModal(`<h2>Nuevo activo</h2>
-    <div class="form-group"><label>Wallet</label><select id="naWallet"><option value="wallet1">${esc(WALLETS.wallet1.name)}</option><option value="wallet2">${esc(WALLETS.wallet2.name)}</option></select></div>
+    <div class="form-group"><label>Wallet</label><select id="naWallet">${walletOptionsHtml(WALLETS[state.selWallet]?state.selWallet:null)}</select></div>
     <div class="form-row"><div class="form-group"><label>Símbolo</label><input id="naSym" placeholder="BTC" autocomplete="off" oninput="naSymInput()"></div><div class="form-group"><label>Nombre</label><input id="naName" placeholder="Bitcoin"></div></div>
     <div id="naSug"></div>
     <div class="form-group"><label>Precio actual</label><input id="naPrice" type="number" step="any" placeholder="0.00"></div>
@@ -1838,7 +1927,7 @@ function confirmSwap(fromId){
 function openEditAsset(aid){
   const a=db.assets.find(x=>x.id===aid);if(!a)return;
   openModal(`<h2>Editar ${esc(a.symbol)}</h2>
-    <div class="form-group"><label>Wallet</label><select id="eaWallet"><option value="wallet1" ${a.wallet==='wallet1'?'selected':''}>${esc(WALLETS.wallet1.name)}</option><option value="wallet2" ${a.wallet==='wallet2'?'selected':''}>${esc(WALLETS.wallet2.name)}</option></select></div>
+    <div class="form-group"><label>Wallet</label><select id="eaWallet">${walletOptionsHtml(a.wallet)}</select></div>
     <div class="form-row"><div class="form-group"><label>Símbolo</label><input id="eaSym" value="${esc(a.symbol)}"></div><div class="form-group"><label>Nombre</label><input id="eaName" value="${esc(a.name||'')}"></div></div>
     <div class="form-group"><label>Precio actual</label><input id="eaPrice" type="number" step="any" value="${a.price||0}"></div>
     <button class="btn btn-primary" onclick="saveEditAsset('${a.id}')" style="width:100%;margin-top:8px">Guardar</button>`);
@@ -1858,7 +1947,7 @@ function openPoolModal(pid){
   const p=pid?db.positions.find(x=>x.id===pid):null;
   const title=p?'Editar posición':'Nueva posición';
   openModal(`<h2>${title}</h2>
-    <div class="form-group"><label>Wallet</label><select id="ppWallet"><option value="wallet1" ${p?.wallet==='wallet1'?'selected':''}>${esc(WALLETS.wallet1.name)}</option><option value="wallet2" ${p?.wallet==='wallet2'?'selected':''}>${esc(WALLETS.wallet2.name)}</option></select></div>
+    <div class="form-group"><label>Wallet</label><select id="ppWallet">${walletOptionsHtml(p?.wallet||(WALLETS[state.poolFilter]?state.poolFilter:null))}</select></div>
     <div class="form-row"><div class="form-group"><label>Protocolo</label><input id="ppProto" value="${esc(p?.protocol||'')}" placeholder="PancakeSwap"></div><div class="form-group"><label>Red</label><input id="ppNet" value="${esc(p?.network||'')}" placeholder="Base"></div></div>
     <div class="form-group"><label>Fee tier (%)</label><input id="ppFeeTier" type="number" step="any" value="${p?.feeTier||''}" placeholder="0.30"></div>
     <div class="divider"></div><h3 style="margin-bottom:12px;font-size:.95rem">Token A</h3>
@@ -2075,7 +2164,7 @@ function cmcReconstruct(txs,transferMode){
 function openCmcImport(){
   openModal(`<h2>Importar de CoinMarketCap</h2>
     <div class="hint" style="margin-bottom:14px">Sube el archivo <strong>..._transactions.csv</strong> de CoinMarketCap. Reconstruyo tus activos con su historial (compras, ventas y fechas) y fusiono en la wallet que elijas.</div>
-    <div class="form-group"><label>Wallet destino</label><select id="cmcWallet"><option value="wallet1">${esc(WALLETS.wallet1.name)}</option><option value="wallet2">${esc(WALLETS.wallet2.name)}</option></select></div>
+    <div class="form-group"><label>Wallet destino</label><select id="cmcWallet">${walletOptionsHtml()}</select></div>
     <div class="form-group"><label>Archivo de transacciones (.csv)</label><input type="file" id="cmcFile" accept=".csv"></div>
     <div class="form-group"><label>Transferencias / airdrops (transferIn)</label><select id="cmcTransfer"><option value="zero">Coste 0 (recomendado)</option><option value="ignore">Ignorarlas</option></select></div>
     <button class="btn btn-primary" onclick="cmcAnalyze()" style="width:100%;margin-top:8px">Analizar archivo</button>`);
@@ -2125,6 +2214,16 @@ function cmcConfirm(){
   saveDB(db);closeModal();go('portfolio');syncPrices(true);
   setTimeout(()=>alert('Importación completada: '+added+' nuevos, '+merged+' fusionados.\nPulsa ↻ si algún precio actual sale a 0 (tokens no listados se ponen a mano).'),150);
 }
+
+// Repintar gráficas al girar el móvil o redimensionar (los canvas se quedan con el tamaño antiguo)
+let __rsT=null;
+window.addEventListener('resize',()=>{
+  clearTimeout(__rsT);
+  __rsT=setTimeout(()=>{
+    if(state.view==='portfolio')drawAllCharts();
+    else if(state.view==='evolution')drawEvoChart(valueSeriesForChart(),state.evoRange||'all','evoChart');
+  },200);
+});
 
 // ===================== INIT =====================
 async function init(){
